@@ -1,0 +1,23 @@
+{
+  "name": "chrome-svelte-extension-template",
+  "version": "1.0.0",
+  "description": "A Chrome extension template using Svelte and TypeScript",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "generate-icons": "bun run scripts/generate-icons.ts"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/chrome": "^0.0.287",
+    "sharp": "^0.33.0",
+    "svelte": "^5.19.0",
+    "svelte-check": "^4.1.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
