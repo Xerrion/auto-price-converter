@@ -2,7 +2,7 @@
 // Handles various e-commerce DOM structures
 
 import { PLATFORM_CONFIGS } from "./platforms";
-import { PRICE_REGEX } from "./priceParser";
+import { PRICE_REGEX } from "../parsers/priceParser";
 
 /**
  * Extract price text from an e-commerce price container

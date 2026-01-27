@@ -1,7 +1,7 @@
 // Price formatting utilities
 
-import type { CurrencyCode, NumberFormat } from "../lib/types";
-import { ALL_CURRENCIES, NUMBER_FORMATS } from "../lib/types";
+import type { CurrencyCode, NumberFormat } from "../../lib/types";
+import { ALL_CURRENCIES, NUMBER_FORMATS } from "../../lib/types";
 
 /**
  * Format a converted price with the appropriate currency symbol and locale

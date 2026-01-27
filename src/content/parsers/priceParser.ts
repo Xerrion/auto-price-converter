@@ -1,8 +1,8 @@
 // Price parsing utilities
 // Handles regex matching, amount normalization, and currency resolution
 
-import type { MajorCurrency } from "../lib/types";
-import { CURRENCY_SYMBOLS, MAJOR_CURRENCIES } from "../lib/types";
+import type { MajorCurrency } from "../../lib/types";
+import { CURRENCY_SYMBOLS, MAJOR_CURRENCIES } from "../../lib/types";
 
 // Combined regex pattern to detect prices
 // Matches: $10.50, €100, £50.00, 10.50€, 10,50 €, USD 100, 100 EUR, CA$10, A$50

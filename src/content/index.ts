@@ -3,15 +3,18 @@
 
 import type { Settings, ExchangeRates } from "../lib/types";
 
-import { injectStyles, isInViewport } from "./domUtils";
+import { injectStyles, isInViewport } from "./utils/domUtils";
 import {
   setupMutationObserver,
   setupIntersectionObserver,
   disconnectMutationObserver,
-} from "./observers";
-import { processPriceContainers, convertPriceElement } from "./priceContainers";
-import { processTextPrices } from "./textPrices";
-import { revertConvertedPrices } from "./revert";
+} from "./utils/observers";
+import {
+  processPriceContainers,
+  convertPriceElement,
+} from "./scanners/priceContainers";
+import { processTextPrices } from "./scanners/textPrices";
+import { revertConvertedPrices } from "./utils/revert";
 
 console.log("Price Converter: Content script loaded");
 

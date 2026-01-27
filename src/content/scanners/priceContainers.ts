@@ -1,21 +1,21 @@
 // E-commerce price container processing
 // Handles structured price elements from known platforms
 
-import { convertCurrency } from "../lib/exchangeRates";
-import type { Settings, ExchangeRates } from "../lib/types";
+import { convertCurrency } from "../../lib/exchangeRates";
+import type { Settings, ExchangeRates } from "../../lib/types";
 
 import { ALL_PRICE_SELECTORS } from "./platforms";
-import { parsePrice } from "./priceParser";
+import { parsePrice } from "../parsers/priceParser";
 import { extractPriceText } from "./priceExtractor";
-import { formatPrice } from "./formatter";
+import { formatPrice } from "../parsers/formatter";
 import {
   CONVERTED_ATTR,
   ORIGINAL_ATTR,
   PENDING_ATTR,
   applyFadingHighlight,
   isInViewport,
-} from "./domUtils";
-import { observeForConversion } from "./observers";
+} from "../utils/domUtils";
+import { observeForConversion } from "../utils/observers";
 
 /** Selectors for child price elements (to detect wrapper containers) */
 const CHILD_PRICE_SELECTORS =

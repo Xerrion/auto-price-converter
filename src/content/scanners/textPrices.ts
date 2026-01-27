@@ -3,17 +3,17 @@
 
 // @ts-ignore - No types available for findAndReplaceDOMText
 import findAndReplaceDOMText from "findandreplacedomtext";
-import { convertCurrency } from "../lib/exchangeRates";
-import type { Settings, ExchangeRates } from "../lib/types";
+import { convertCurrency } from "../../lib/exchangeRates";
+import type { Settings, ExchangeRates } from "../../lib/types";
 
 import { ALL_PRICE_SELECTORS } from "./platforms";
-import { PRICE_REGEX, parsePrice } from "./priceParser";
-import { formatPrice } from "./formatter";
+import { PRICE_REGEX, parsePrice } from "../parsers/priceParser";
+import { formatPrice } from "../parsers/formatter";
 import {
   CONVERTED_ATTR,
   ORIGINAL_ATTR,
   applyFadingHighlight,
-} from "./domUtils";
+} from "../utils/domUtils";
 
 /** Tags that should never contain prices */
 const EXCLUDED_TAGS = [

@@ -1,7 +1,7 @@
 // Observer setup for dynamic content detection
 // Handles MutationObserver and IntersectionObserver
 
-import type { Settings, ExchangeRates } from "../lib/types";
+import type { Settings, ExchangeRates } from "../../lib/types";
 import { CONVERTED_ATTR, PENDING_ATTR } from "./domUtils";
 
 let observer: MutationObserver | null = null;
