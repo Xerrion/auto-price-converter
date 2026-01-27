@@ -5,7 +5,7 @@ export default defineManifest({
   name: "Auto Price Converter",
   description:
     "Automatically converts prices on websites to your chosen currency using live exchange rates",
-  version: "1.0.0",
+  version: "1.1.2",
   icons: {
     "16": "src/icons/icon16.png",
     "32": "src/icons/icon32.png",
