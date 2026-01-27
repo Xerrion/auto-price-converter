@@ -6,13 +6,16 @@ import { CURRENCY_SYMBOLS, MAJOR_CURRENCIES } from "../lib/types";
 
 // Combined regex pattern to detect prices
 // Matches: $10.50, €100, £50.00, 10.50€, 10,50 €, USD 100, 100 EUR, CA$10, A$50
+// Uses negative lookbehind (?<!...) to avoid matching numbers that are part of product names
 export const PRICE_REGEX = new RegExp(
   "(?:" +
     // Symbol before amount: $10.50, €100, £50.00
     "([€$£¥])\\s*([\\d,]+(?:\\.\\d{1,2})?)" +
     "|" +
     // Symbol after amount: 10.50€, 100 €, 10,50 €
-    "([\\d,.]+)\\s*([€$£¥])" +
+    // Negative lookbehind to avoid matching "KAYANO 14£" as "14£"
+    // Must NOT be preceded by a letter/digit, or by a space that follows a letter/digit
+    "(?<![a-zA-Z0-9])(?<![a-zA-Z0-9]\\s)([\\d,.]+)\\s*([€$£¥])" +
     "|" +
     // Currency code before: USD 100, EUR 50.00
     "\\b(EUR|USD|GBP|JPY|CHF|CAD|AUD|NZD|CNY|SEK|NOK|DKK)\\s+([\\d,]+(?:\\.\\d{1,2})?)\\b" +

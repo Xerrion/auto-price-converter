@@ -95,4 +95,17 @@ describe("parsePrice", () => {
     expect(parsePrice("$0")).toBeNull();
     expect(parsePrice("$-10")).toBeNull();
   });
+
+  it("does not match model numbers followed by currency symbol", () => {
+    // "KAYANO 14£140" - the 14 should not be matched, only £140
+    const result = parsePrice("KAYANO 14£140");
+    // Should match £140, not 14£
+    expect(result).toEqual({ amount: 140, currency: "GBP" });
+  });
+
+  it("does not match product IDs as prices", () => {
+    // Plain numbers without currency symbols should not match
+    expect(parsePrice("Model 14")).toBeNull();
+    expect(parsePrice("GEL-KAYANO 14")).toBeNull();
+  });
 });

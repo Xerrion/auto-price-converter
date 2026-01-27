@@ -128,6 +128,21 @@ export const PLATFORM_CONFIGS: PlatformConfig[] = [
       "#product .price",
     ],
   },
+  // JD Group (size.co.uk, jdsports.co.uk, footpatrol.com, etc.)
+  {
+    name: "JDGroup",
+    selectors: [
+      ".itemPrices .pri",
+      ".itemPrices .now",
+      ".itemPrices .was",
+      "[data-e2e='product-price']",
+      ".price .pri",
+      ".productPrice",
+      ".productListPrice",
+      ".salePrice",
+      ".ticketPrice",
+    ],
+  },
   // Generic price patterns (fallback for unknown platforms)
   {
     name: "Generic",

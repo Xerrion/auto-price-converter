@@ -329,9 +329,13 @@ function processTextPrices(container: HTMLElement): void {
           tagName === "textarea" ||
           tagName === "input" ||
           tagName === "select" ||
-          tagName === "svg" ||
-          tagName === "a" // Skip links - often contain IDs and non-price numbers
+          tagName === "svg"
         ) {
+          return false;
+        }
+
+        // Skip headings (h1-h6) - these are typically product names, not prices
+        if (/^h[1-6]$/.test(tagName)) {
           return false;
         }
 
@@ -342,6 +346,20 @@ function processTextPrices(container: HTMLElement): void {
         // Skip elements inside already-converted elements (prevents double-conversion)
         if (element.closest && element.closest(`[${CONVERTED_ATTR}]`)) {
           return false;
+        }
+
+        // Skip product title/name elements to avoid matching model numbers as prices
+        const productTitleSelectors =
+          '[itemprop="name"], [data-e2e="product-name"], .product-name, .product-title, .productName, #productItemTitle h1, #productItemTitle h2';
+        try {
+          if (element.matches && element.matches(productTitleSelectors)) {
+            return false;
+          }
+          if (element.closest && element.closest(productTitleSelectors)) {
+            return false;
+          }
+        } catch (e) {
+          // Ignore selector errors
         }
 
         try {
@@ -452,10 +470,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   return true;
 });
-
-// ============================================================================
-// ENTRY POINT
-// ============================================================================
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
