@@ -1,124 +1,320 @@
 <script lang="ts">
-  interface Settings {
-    enabled: boolean;
-    theme: string;
-    notifications: boolean;
-  }
+  import type { Settings, ExchangeRates, CurrencyCode } from "../lib/types";
+  import {
+    ALL_CURRENCIES,
+    CURRENCY_CODES,
+    MAJOR_CURRENCIES,
+    NUMBER_FORMATS,
+    NUMBER_FORMAT_CODES,
+  } from "../lib/types";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import { Switch } from "$lib/components/ui/switch/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
+  import { Badge } from "$lib/components/ui/badge/index.js";
+  import { Separator } from "$lib/components/ui/separator/index.js";
+  import { Toaster } from "$lib/components/ui/sonner/index.js";
+  import { toast } from "svelte-sonner";
 
   let settings = $state<Settings>({
     enabled: true,
-    theme: "light",
-    notifications: true,
+    targetCurrency: "EUR",
+    showOriginalPrice: true,
+    highlightConverted: true,
+    decimalPlaces: 2,
+    numberFormat: "en-US",
   });
 
-  let status = $state("");
+  let rates = $state<ExchangeRates | null>(null);
+  let loading = $state(true);
 
-  // Load settings on mount
+  // Load settings and rates on mount
   $effect(() => {
-    chrome.storage.sync.get(["settings"], (result) => {
-      if (result.settings) {
-        settings = result.settings;
-      }
-    });
+    loadData();
   });
 
-  function saveSettings() {
-    chrome.storage.sync.set({ settings }, () => {
-      status = "Settings saved!";
-      setTimeout(() => {
-        status = "";
-      }, 2000);
-    });
+  async function loadData() {
+    try {
+      const [settingsResponse, ratesResponse] = await Promise.all([
+        chrome.runtime.sendMessage({ type: "GET_SETTINGS" }),
+        chrome.runtime.sendMessage({ type: "GET_RATES" }),
+      ]);
+
+      if (settingsResponse.settings) {
+        settings = settingsResponse.settings;
+      }
+      if (ratesResponse.rates) {
+        rates = ratesResponse.rates;
+      }
+      loading = false;
+    } catch (err) {
+      console.error("Failed to load data:", err);
+      loading = false;
+    }
+  }
+
+  async function saveSettings() {
+    try {
+      await chrome.runtime.sendMessage({
+        type: "SAVE_SETTINGS",
+        payload: settings,
+      });
+      toast.success("Settings saved!");
+    } catch (err) {
+      console.error("Failed to save settings:", err);
+      toast.error("Failed to save settings");
+    }
+  }
+
+  async function refreshRates() {
+    toast.info("Refreshing exchange rates...");
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: "REFRESH_RATES",
+      });
+      if (response.rates) {
+        rates = response.rates;
+        toast.success("Exchange rates updated!");
+      } else {
+        toast.error("Failed to refresh rates");
+      }
+    } catch (err) {
+      console.error("Failed to refresh rates:", err);
+      toast.error("Failed to refresh rates");
+    }
+  }
+
+  function getCurrencyInfo(code: CurrencyCode) {
+    return ALL_CURRENCIES[code];
   }
 </script>
 
-<main>
-  <h1>Extension Options</h1>
+<main class="min-h-screen bg-background p-8">
+  <div class="max-w-2xl mx-auto space-y-6">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold">💱 Price Converter Options</h1>
+    </div>
 
-  <div class="option">
-    <label>
-      <input type="checkbox" bind:checked={settings.enabled} />
-      Enable Extension
-    </label>
+    {#if loading}
+      <div class="flex items-center justify-center py-12 text-muted-foreground">
+        Loading...
+      </div>
+    {:else}
+      <!-- General Settings -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>General Settings</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="space-y-0.5">
+              <Label for="enable-conversion" class="text-base font-medium">
+                Enable Price Conversion
+              </Label>
+              <p class="text-sm text-muted-foreground">
+                Turn on automatic price conversion on all websites
+              </p>
+            </div>
+            <Switch
+              id="enable-conversion"
+              checked={settings.enabled}
+              onCheckedChange={(checked: boolean) => {
+                settings.enabled = checked;
+              }}
+            />
+          </div>
+
+          <Separator />
+
+          <div class="space-y-2">
+            <Label for="target-currency" class="text-base font-medium">
+              Target Currency
+            </Label>
+            <p class="text-sm text-muted-foreground">
+              All detected prices will be converted to this currency
+            </p>
+            <Select.Root
+              type="single"
+              value={settings.targetCurrency}
+              onValueChange={(value: string | undefined) => {
+                if (value) settings.targetCurrency = value as CurrencyCode;
+              }}
+            >
+              <Select.Trigger id="target-currency" class="w-full">
+                {#if settings.targetCurrency}
+                  {getCurrencyInfo(settings.targetCurrency).symbol}
+                  {settings.targetCurrency} - {getCurrencyInfo(
+                    settings.targetCurrency,
+                  ).name}
+                {:else}
+                  Select currency
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                {#each CURRENCY_CODES as currency}
+                  <Select.Item value={currency}>
+                    {getCurrencyInfo(currency).symbol}
+                    {currency} - {getCurrencyInfo(currency).name}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+        </Card.Content>
+      </Card.Root>
+
+      <!-- Display Settings -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Display Settings</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="space-y-0.5">
+              <Label for="show-original" class="text-base font-medium">
+                Show Original Price
+              </Label>
+              <p class="text-sm text-muted-foreground">
+                Display the original price in parentheses after the converted
+                price
+              </p>
+            </div>
+            <Switch
+              id="show-original"
+              checked={settings.showOriginalPrice}
+              onCheckedChange={(checked: boolean) => {
+                settings.showOriginalPrice = checked;
+              }}
+            />
+          </div>
+
+          <Separator />
+
+          <div class="flex items-center justify-between">
+            <div class="space-y-0.5">
+              <Label for="highlight" class="text-base font-medium">
+                Highlight Converted Prices
+              </Label>
+              <p class="text-sm text-muted-foreground">
+                Add a subtle yellow background to converted prices
+              </p>
+            </div>
+            <Switch
+              id="highlight"
+              checked={settings.highlightConverted}
+              onCheckedChange={(checked: boolean) => {
+                settings.highlightConverted = checked;
+              }}
+            />
+          </div>
+
+          <Separator />
+
+          <div class="space-y-2">
+            <Label for="decimals" class="text-base font-medium">
+              Decimal Places
+            </Label>
+            <Select.Root
+              type="single"
+              value={String(settings.decimalPlaces)}
+              onValueChange={(value: string | undefined) => {
+                if (value) settings.decimalPlaces = Number(value) as 0 | 1 | 2;
+              }}
+            >
+              <Select.Trigger id="decimals" class="w-[200px]">
+                {settings.decimalPlaces === 0
+                  ? "0 (e.g., €10)"
+                  : settings.decimalPlaces === 1
+                    ? "1 (e.g., €10.5)"
+                    : "2 (e.g., €10.50)"}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="0">0 (e.g., €10)</Select.Item>
+                <Select.Item value="1">1 (e.g., €10.5)</Select.Item>
+                <Select.Item value="2">2 (e.g., €10.50)</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </div>
+
+          <Separator />
+
+          <div class="space-y-2">
+            <Label for="number-format" class="text-base font-medium">
+              Number Format
+            </Label>
+            <p class="text-sm text-muted-foreground">
+              How thousands and decimals are displayed
+            </p>
+            <Select.Root
+              type="single"
+              value={settings.numberFormat}
+              onValueChange={(value: string | undefined) => {
+                if (value)
+                  settings.numberFormat = value as typeof settings.numberFormat;
+              }}
+            >
+              <Select.Trigger id="number-format" class="w-[200px]">
+                {NUMBER_FORMATS[settings.numberFormat].name}
+              </Select.Trigger>
+              <Select.Content>
+                {#each NUMBER_FORMAT_CODES as format}
+                  <Select.Item value={format}>
+                    {NUMBER_FORMATS[format].name}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+        </Card.Content>
+      </Card.Root>
+
+      <!-- Exchange Rates -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Exchange Rates</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          {#if rates}
+            <div class="space-y-4">
+              <div class="flex flex-wrap gap-2">
+                <Badge variant="outline">Last updated: {rates.date}</Badge>
+                <Badge variant="outline">Base: {rates.base}</Badge>
+              </div>
+
+              <div
+                class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 p-4 bg-muted rounded-lg"
+              >
+                {#each MAJOR_CURRENCIES.filter((c) => c !== rates?.base) as currency}
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-sm">{currency}</span>
+                    <span class="text-xs text-muted-foreground">
+                      {rates.rates[currency]?.toFixed(4) || "N/A"}
+                    </span>
+                  </div>
+                {/each}
+              </div>
+
+              <Button variant="outline" onclick={refreshRates}>
+                🔄 Refresh Rates
+              </Button>
+            </div>
+          {:else}
+            <div class="space-y-4">
+              <p class="text-muted-foreground">Exchange rates not loaded</p>
+              <Button variant="outline" onclick={refreshRates}>
+                Load Rates
+              </Button>
+            </div>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+
+      <!-- Save Button -->
+      <div class="flex justify-center">
+        <Button size="lg" onclick={saveSettings}>Save Settings</Button>
+      </div>
+    {/if}
   </div>
-
-  <div class="option">
-    <label>
-      Theme:
-      <select bind:value={settings.theme}>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-        <option value="auto">Auto</option>
-      </select>
-    </label>
-  </div>
-
-  <div class="option">
-    <label>
-      <input type="checkbox" bind:checked={settings.notifications} />
-      Enable Notifications
-    </label>
-  </div>
-
-  <button onclick={saveSettings}>Save Settings</button>
-
-  {#if status}
-    <p class="status">{status}</p>
-  {/if}
+  <Toaster />
 </main>
-
-<style>
-  main {
-    max-width: 500px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  h1 {
-    margin-bottom: 1.5rem;
-    color: #333;
-  }
-
-  .option {
-    margin-bottom: 1rem;
-  }
-
-  label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    color: #444;
-  }
-
-  select {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
-
-  button {
-    margin-top: 1rem;
-    padding: 0.75rem 1.5rem;
-    background: #4a90d9;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #357abd;
-  }
-
-  .status {
-    margin-top: 1rem;
-    color: #28a745;
-    font-weight: 500;
-  }
-</style>
