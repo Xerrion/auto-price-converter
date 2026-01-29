@@ -39,7 +39,9 @@
   },
   "dependencies": {
     "@fontsource-variable/public-sans": "^5.2.7",
+    "class-variance-authority": "^0.7.1",
     "currency.js": "^2.0.4",
-    "findandreplacedomtext": "^0.4.6"
+    "findandreplacedomtext": "^0.4.6",
+    "lucide-react": "^0.563.0"
   }
 }
