@@ -19,6 +19,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       highlightConverted: true,
       decimalPlaces: 2,
       numberFormat: "en-US",
+      theme: "system",
     };
     await saveSettings(defaultSettings);
   }

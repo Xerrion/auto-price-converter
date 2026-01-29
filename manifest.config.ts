@@ -35,5 +35,5 @@ export default defineManifest({
     },
   ],
   permissions: ["storage", "activeTab"],
-  host_permissions: ["<all_urls>", "https://api.frankfurter.dev/*"],
+  host_permissions: ["https://api.frankfurter.dev/*"],
 });

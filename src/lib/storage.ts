@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: Settings = {
   highlightConverted: true,
   decimalPlaces: 2,
   numberFormat: "en-US",
+  theme: "system",
 };
 
 // Cache duration: 24 hours (rates are updated daily around 16:00 CET)

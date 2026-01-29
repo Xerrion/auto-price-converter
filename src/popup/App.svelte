@@ -8,8 +8,6 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
-  import { Toaster } from "$lib/components/ui/sonner/index.js";
-  import { toast } from "svelte-sonner";
 
   let settings = $state<Settings | null>(null);
   let rates = $state<ExchangeRates | null>(null);
@@ -53,10 +51,8 @@
         type: "SAVE_SETTINGS",
         payload: settings,
       });
-      toast.success("Settings saved!");
     } catch (err) {
       console.error("Failed to save settings:", err);
-      toast.error("Failed to save settings");
     }
   }
 
@@ -153,5 +149,4 @@
       {/if}
     </Card.Content>
   </Card.Root>
-  <Toaster />
 </main>
