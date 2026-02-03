@@ -22,6 +22,8 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
+  import { Toaster } from "$lib/components/ui/sonner/index.js";
+  import { toast } from "svelte-sonner";
 
   let settings = $state<Settings>({
     enabled: true,
@@ -71,8 +73,10 @@
         type: "SAVE_SETTINGS",
         payload: settings,
       });
+      toast.success("Settings saved");
     } catch (err) {
       console.error("Failed to save settings:", err);
+      toast.error("Failed to save settings");
     }
   }
 
@@ -83,9 +87,13 @@
       });
       if (response.rates) {
         rates = response.rates;
+        toast.success("Exchange rates updated");
+      } else {
+        toast.error("Failed to refresh exchange rates");
       }
     } catch (err) {
       console.error("Failed to refresh rates:", err);
+      toast.error("Failed to refresh exchange rates");
     }
   }
 
@@ -97,7 +105,7 @@
 <main class="min-h-screen bg-background p-8">
   <div class="max-w-2xl mx-auto space-y-6">
     <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold">💱 Price Converter Options</h1>
+      <h1 class="text-2xl font-bold">💱 Auto Price Converter Options</h1>
     </div>
 
     {#if loading}
@@ -361,3 +369,5 @@
     {/if}
   </div>
 </main>
+
+<Toaster richColors duration={2000} />
