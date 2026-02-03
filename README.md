@@ -158,9 +158,37 @@ bun run dev
 | `bun run test:run`       | Run tests once                           |
 | `bun run generate-icons` | Generate icon sizes from source          |
 
+### Versioning & Releases
+
+This project follows **SemVer** and uses **Changesets** to manage versions and changelogs. The extension version is kept in sync across `package.json` and `manifest.config.ts`. Release notes are auto-generated from merged Changesets in CI.
+
+#### Workflow
+
+1. Create a changeset for your change:
+
+```bash
+bun run changeset
+```
+
+1. Apply version bumps and sync the manifest:
+
+```bash
+bun run version
+```
+
+1. Commit the changes and tag the release:
+
+```bash
+git commit -am "chore: release"
+git tag vX.Y.Z
+git push --follow-tags
+```
+
+> Tip: CI opens a release PR automatically. When merged into `main`, CI tags `vX.Y.Z` and the `release` workflow publishes the GitHub release ZIP.
+
 ### Project Structure
 
-```
+```text
 src/
 ├── background/           # Service worker
 │   └── index.ts          # Fetches & caches exchange rates
@@ -190,7 +218,7 @@ src/
 
 ### Architecture
 
-```
+```text
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │  Content Script │────▶│ Background Worker│────▶│ Frankfurter API │
 │  (price detect) │◀────│  (rate caching)  │◀────│  (ECB rates)    │
