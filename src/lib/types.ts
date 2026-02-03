@@ -84,6 +84,16 @@ export const NUMBER_FORMAT_CODES = Object.keys(
   NUMBER_FORMATS,
 ) as NumberFormat[];
 
+// Theme options
+export const THEMES = {
+  system: { name: "System", icon: "💻" },
+  light: { name: "Light", icon: "☀️" },
+  dark: { name: "Dark", icon: "🌙" },
+} as const;
+
+export type Theme = keyof typeof THEMES;
+export const THEME_OPTIONS = Object.keys(THEMES) as Theme[];
+
 export interface Settings {
   enabled: boolean;
   targetCurrency: CurrencyCode; // Can be ANY currency
@@ -91,6 +101,7 @@ export interface Settings {
   highlightConverted: boolean;
   decimalPlaces: number;
   numberFormat: NumberFormat; // User's preferred number format
+  theme: Theme; // light, dark, or system
 }
 
 export interface ExchangeRates {

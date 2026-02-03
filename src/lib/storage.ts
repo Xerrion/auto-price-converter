@@ -1,6 +1,7 @@
 // Chrome storage utilities
 
 import type { Settings, CachedRates } from "./types";
+import { ALL_CURRENCIES, NUMBER_FORMATS, THEMES } from "./types";
 
 const DEFAULT_SETTINGS: Settings = {
   enabled: true,
@@ -9,15 +10,50 @@ const DEFAULT_SETTINGS: Settings = {
   highlightConverted: true,
   decimalPlaces: 2,
   numberFormat: "en-US",
+  theme: "system",
 };
 
 // Cache duration: 24 hours (rates are updated daily around 16:00 CET)
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
+function normalizeSettings(settings?: Partial<Settings> | null): Settings {
+  const merged: Settings = {
+    ...DEFAULT_SETTINGS,
+    ...(settings ?? {}),
+  } as Settings;
+
+  if (typeof merged.enabled !== "boolean") {
+    merged.enabled = DEFAULT_SETTINGS.enabled;
+  }
+  if (typeof merged.showOriginalPrice !== "boolean") {
+    merged.showOriginalPrice = DEFAULT_SETTINGS.showOriginalPrice;
+  }
+  if (typeof merged.highlightConverted !== "boolean") {
+    merged.highlightConverted = DEFAULT_SETTINGS.highlightConverted;
+  }
+  if (
+    typeof merged.decimalPlaces !== "number" ||
+    ![0, 1, 2].includes(merged.decimalPlaces)
+  ) {
+    merged.decimalPlaces = DEFAULT_SETTINGS.decimalPlaces;
+  }
+  if (!NUMBER_FORMATS[merged.numberFormat]) {
+    merged.numberFormat = DEFAULT_SETTINGS.numberFormat;
+  }
+  if (!ALL_CURRENCIES[merged.targetCurrency]) {
+    merged.targetCurrency = DEFAULT_SETTINGS.targetCurrency;
+  }
+  if (!THEMES[merged.theme]) {
+    merged.theme = DEFAULT_SETTINGS.theme;
+  }
+
+  return merged;
+}
+
 export async function getSettings(): Promise<Settings> {
   return new Promise((resolve) => {
     chrome.storage.sync.get(["settings"], (result) => {
-      resolve((result.settings as Settings) ?? DEFAULT_SETTINGS);
+      resolve(normalizeSettings(result.settings as Partial<Settings> | null));
     });
   });
 }

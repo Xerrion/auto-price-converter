@@ -1,12 +1,20 @@
 <script lang="ts">
-  import type { Settings, ExchangeRates, CurrencyCode } from "../lib/types";
+  import type {
+    Settings,
+    ExchangeRates,
+    CurrencyCode,
+    Theme,
+  } from "../lib/types";
   import {
     ALL_CURRENCIES,
     CURRENCY_CODES,
     MAJOR_CURRENCIES,
     NUMBER_FORMATS,
     NUMBER_FORMAT_CODES,
+    THEMES,
+    THEME_OPTIONS,
   } from "../lib/types";
+  import { applyTheme, watchSystemTheme } from "../lib/theme";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
@@ -14,8 +22,6 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
-  import { Toaster } from "$lib/components/ui/sonner/index.js";
-  import { toast } from "svelte-sonner";
 
   let settings = $state<Settings>({
     enabled: true,
@@ -24,10 +30,12 @@
     highlightConverted: true,
     decimalPlaces: 2,
     numberFormat: "en-US",
+    theme: "system",
   });
 
   let rates = $state<ExchangeRates | null>(null);
   let loading = $state(true);
+  let cleanupThemeWatcher: (() => void) | null = null;
 
   // Load settings and rates on mount
   $effect(() => {
@@ -43,6 +51,9 @@
 
       if (settingsResponse.settings) {
         settings = settingsResponse.settings;
+        applyTheme(settings.theme);
+        cleanupThemeWatcher?.();
+        cleanupThemeWatcher = watchSystemTheme(settings.theme);
       }
       if (ratesResponse.rates) {
         rates = ratesResponse.rates;
@@ -60,28 +71,21 @@
         type: "SAVE_SETTINGS",
         payload: settings,
       });
-      toast.success("Settings saved!");
     } catch (err) {
       console.error("Failed to save settings:", err);
-      toast.error("Failed to save settings");
     }
   }
 
   async function refreshRates() {
-    toast.info("Refreshing exchange rates...");
     try {
       const response = await chrome.runtime.sendMessage({
         type: "REFRESH_RATES",
       });
       if (response.rates) {
         rates = response.rates;
-        toast.success("Exchange rates updated!");
-      } else {
-        toast.error("Failed to refresh rates");
       }
     } catch (err) {
       console.error("Failed to refresh rates:", err);
-      toast.error("Failed to refresh rates");
     }
   }
 
@@ -269,6 +273,46 @@
         </Card.Content>
       </Card.Root>
 
+      <!-- Appearance -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Appearance</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-4">
+          <div class="space-y-2">
+            <Label for="theme" class="text-base font-medium">Theme</Label>
+            <p class="text-sm text-muted-foreground">
+              Choose your preferred color scheme
+            </p>
+            <Select.Root
+              type="single"
+              value={settings.theme}
+              onValueChange={(value: string | undefined) => {
+                if (value) {
+                  settings.theme = value as Theme;
+                  applyTheme(settings.theme);
+                  cleanupThemeWatcher?.();
+                  cleanupThemeWatcher = watchSystemTheme(settings.theme);
+                }
+              }}
+            >
+              <Select.Trigger id="theme" class="w-[200px]">
+                {THEMES[settings.theme].icon}
+                {THEMES[settings.theme].name}
+              </Select.Trigger>
+              <Select.Content>
+                {#each THEME_OPTIONS as theme}
+                  <Select.Item value={theme}>
+                    {THEMES[theme].icon}
+                    {THEMES[theme].name}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+        </Card.Content>
+      </Card.Root>
+
       <!-- Exchange Rates -->
       <Card.Root>
         <Card.Header>
@@ -316,5 +360,4 @@
       </div>
     {/if}
   </div>
-  <Toaster />
 </main>
