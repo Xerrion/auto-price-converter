@@ -16,10 +16,14 @@ export function formatPrice(
   const locale = NUMBER_FORMATS[numberFormat].locale;
 
   // Format the number using the user's preferred locale
-  const formattedAmount = new Intl.NumberFormat(locale, {
+  let formattedAmount = new Intl.NumberFormat(locale, {
     minimumFractionDigits: decimalPlaces,
     maximumFractionDigits: decimalPlaces,
   }).format(amount);
+
+  if (numberFormat === "de-CH") {
+    formattedAmount = formattedAmount.replace(/[\u2019\u02BC]/g, "'");
+  }
 
   // Currencies that typically show symbol before the amount
   const symbolBefore = [
