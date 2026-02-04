@@ -14,34 +14,26 @@ jobs:
     if: github.event.inputs.confirm == 'publish'
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Get latest release
+        id: release
+        uses: pozetroninc/github-action-get-latest-release@master
         with:
-          bun-version: latest
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
-        run: bun install
-
-      - name: Type check
-        run: bun run check
-
-      - name: Set production API URL
-        run: echo "VITE_RATES_API_BASE=${{ secrets.VITE_RATES_API_BASE }}" >> $GITHUB_ENV
-
-      - name: Build extension
-        run: bun run build
-
-      - name: Get version from package.json
+      - name: Extract version
         id: version
-        run: echo "VERSION=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${RELEASE_TAG#v}" >> $GITHUB_OUTPUT
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.release }}
 
-      - name: Create ZIP archive
+      - name: Download release asset
         run: |
-          cd dist
-          zip -r ../extension-${{ steps.version.outputs.VERSION }}.zip .
+          gh release download "${{ steps.release.outputs.release }}" \
+            --pattern "extension-${{ steps.version.outputs.VERSION }}.zip" \
+            --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload and publish to Chrome Web Store
         uses: mobilefirstllc/cws-publish@latest
