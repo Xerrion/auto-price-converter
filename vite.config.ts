@@ -18,5 +18,12 @@ export default defineConfig({
     hmr: { port: 5173 },
     cors: { origin: [/chrome-extension:\/\//] },
   },
-  build: { outDir: "dist", emptyOutDir: true },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+  },
+  esbuild: {
+    // Strip console.log and console.debug in production builds
+    drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
+  },
 });

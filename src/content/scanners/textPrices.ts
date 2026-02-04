@@ -1,7 +1,6 @@
 // Text price scanning and conversion
 // Uses findAndReplaceDOMText for inline text prices
 
-// @ts-ignore - No types available for findAndReplaceDOMText
 import findAndReplaceDOMText from "findandreplacedomtext";
 import { convertCurrency } from "../../lib/exchangeRates";
 import type { Settings, ExchangeRates } from "../../lib/types";

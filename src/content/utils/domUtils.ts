@@ -8,11 +8,18 @@ export const PENDING_ATTR = "data-price-pending";
 export const CONVERTED_ATTR = "data-price-converted";
 export const ORIGINAL_ATTR = "data-original-price";
 
+// Viewport margin for near-viewport detection (pixels)
+const VIEWPORT_MARGIN = 100;
+
+// Module-level flag to avoid DOM query on each call
+let stylesInjected = false;
+
 /**
  * Inject fade-out animation CSS for price highlights
  */
 export function injectStyles(): void {
-  if (document.getElementById("price-converter-styles")) return;
+  if (stylesInjected) return;
+  stylesInjected = true;
 
   const style = document.createElement("style");
   style.id = "price-converter-styles";
@@ -44,8 +51,8 @@ export function applyFadingHighlight(element: HTMLElement): void {
 export function isInViewport(element: HTMLElement): boolean {
   const rect = element.getBoundingClientRect();
   return (
-    rect.bottom >= -100 &&
-    rect.top <= window.innerHeight + 100 &&
+    rect.bottom >= -VIEWPORT_MARGIN &&
+    rect.top <= window.innerHeight + VIEWPORT_MARGIN &&
     rect.right >= 0 &&
     rect.left <= window.innerWidth
   );

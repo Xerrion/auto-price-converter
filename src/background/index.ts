@@ -2,7 +2,12 @@
 import type { ExchangeRates, Settings } from "../lib/types";
 import { getExchangeRates } from "../lib/exchangeRates";
 import { getSymbols } from "../lib/symbols";
-import { getSettings, saveSettings, getCachedRates } from "../lib/storage";
+import {
+  getSettings,
+  saveSettings,
+  getCachedRates,
+  DEFAULT_SETTINGS,
+} from "../lib/storage";
 
 // Store rates in memory for quick access
 let cachedRates: ExchangeRates | null = null;
@@ -14,16 +19,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
   // Initialize default settings on first install
   if (details.reason === "install") {
-    const defaultSettings: Settings = {
-      enabled: true,
-      targetCurrency: "EUR",
-      showOriginalPrice: true,
-      highlightConverted: true,
-      decimalPlaces: 2,
-      numberFormat: "en-US",
-      theme: "system",
-    };
-    await saveSettings(defaultSettings);
+    await saveSettings(DEFAULT_SETTINGS);
   }
 
   // Fetch exchange rates on install/update
@@ -159,8 +155,8 @@ async function handleSaveSettings(
     await saveSettings(settings);
     sendResponse({ success: true });
 
-    // Notify all tabs about settings change
-    const tabs = await chrome.tabs.query({});
+    // Notify all tabs with content scripts about settings change (http/https only)
+    const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
     for (const tab of tabs) {
       if (tab.id) {
         chrome.tabs
@@ -186,8 +182,8 @@ async function handleRefreshRates(
     cachedRates = await getExchangeRates();
     sendResponse({ rates: cachedRates });
 
-    // Notify all tabs about new rates
-    const tabs = await chrome.tabs.query({});
+    // Notify all tabs with content scripts about new rates (http/https only)
+    const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
     for (const tab of tabs) {
       if (tab.id) {
         chrome.tabs

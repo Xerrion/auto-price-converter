@@ -102,9 +102,15 @@ export function extractPriceText(element: HTMLElement): string | null {
         return NodeFilter.FILTER_REJECT;
       }
 
-      // Skip if display:none or visibility:hidden
-      const style = window.getComputedStyle(parent);
-      if (style.display === "none" || style.visibility === "hidden") {
+      // Check for display:none using offsetParent (much faster than getComputedStyle)
+      // Note: offsetParent is null for display:none elements, but also for <body> and fixed elements
+      if (parent.tagName !== "BODY" && !parent.offsetParent) {
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      // Only check visibility:hidden via getComputedStyle if element has inline visibility style
+      // This avoids expensive reflow in most cases
+      if (parent.style.visibility === "hidden") {
         return NodeFilter.FILTER_REJECT;
       }
 

@@ -7,11 +7,16 @@ import { CONVERTED_ATTR, PENDING_ATTR } from "./domUtils";
 let observer: MutationObserver | null = null;
 let intersectionObserver: IntersectionObserver | null = null;
 
+// Debouncing state for MutationObserver
+let pendingElements = new Set<HTMLElement>();
+let rafId: number | null = null;
+
 type ScanCallback = (container: HTMLElement) => void;
 type ConvertCallback = (element: HTMLElement) => void;
 
 /**
  * Setup MutationObserver to detect dynamically added content
+ * Uses debouncing to batch multiple mutations into a single RAF callback
  */
 export function setupMutationObserver(
   settings: Settings | null,
@@ -22,20 +27,36 @@ export function setupMutationObserver(
     observer.disconnect();
   }
 
+  // Clear any pending state from previous observer
+  pendingElements.clear();
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
   observer = new MutationObserver((mutations) => {
     if (!settings?.enabled || !exchangeRates) return;
 
+    // Collect all new elements into the pending set
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const element = node as HTMLElement;
           if (!element.hasAttribute(CONVERTED_ATTR)) {
-            requestAnimationFrame(() => {
-              onNewContent(element);
-            });
+            pendingElements.add(element);
           }
         }
       }
+    }
+
+    // Schedule a single RAF callback to process all pending elements
+    if (pendingElements.size > 0 && rafId === null) {
+      rafId = requestAnimationFrame(() => {
+        const elements = [...pendingElements];
+        pendingElements.clear();
+        rafId = null;
+        elements.forEach(onNewContent);
+      });
     }
   });
 
@@ -46,10 +67,16 @@ export function setupMutationObserver(
 }
 
 /**
- * Disconnect the MutationObserver
+ * Disconnect the MutationObserver and clean up pending state
  */
 export function disconnectMutationObserver(): void {
   observer?.disconnect();
+  observer = null;
+  pendingElements.clear();
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+  }
 }
 
 /**
@@ -74,6 +101,14 @@ export function setupIntersectionObserver(onVisible: ConvertCallback): void {
       rootMargin: "100px",
     },
   );
+}
+
+/**
+ * Disconnect the IntersectionObserver and clean up
+ */
+export function disconnectIntersectionObserver(): void {
+  intersectionObserver?.disconnect();
+  intersectionObserver = null;
 }
 
 /**
