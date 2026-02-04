@@ -12,7 +12,10 @@ export function formatPrice(
   decimalPlaces: number,
   numberFormat: NumberFormat = "en-US",
 ): string {
-  const currencyInfo = ALL_CURRENCIES[currency];
+  const currencyInfo =
+    ALL_CURRENCIES[currency as keyof typeof ALL_CURRENCIES] ?? {
+      symbol: currency,
+    };
   const locale = NUMBER_FORMATS[numberFormat].locale;
 
   // Format the number using the user's preferred locale
