@@ -292,6 +292,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 ```
 
+## Git Workflow
+
+This project uses a **feature branch** workflow:
+
+1. **Create a feature branch** from `main`:
+   ```bash
+   git checkout -b feature/my-feature
+   ```
+
+2. **Make changes** and commit with descriptive messages
+
+3. **Push the branch** and create a Pull Request:
+   ```bash
+   git push -u origin feature/my-feature
+   ```
+
+4. **After PR approval**, merge to `main`
+
+### Branch Naming Conventions
+
+- `feature/` - New features (e.g., `feature/dark-mode`)
+- `fix/` - Bug fixes (e.g., `fix/price-parsing`)
+- `docs/` - Documentation changes
+- `refactor/` - Code refactoring
+- `chore/` - Maintenance tasks
+
 ## Pull Requests
 
 - **Update documentation** when behavior changes
