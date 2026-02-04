@@ -2,7 +2,8 @@ import type { SymbolsResponse } from "./types";
 import { getCachedSymbols, setCachedSymbols } from "./storage";
 
 const API_BASE_URL =
-  import.meta.env.VITE_RATES_API_BASE ?? "https://api.your-backend.example";
+  import.meta.env.VITE_RATES_API_BASE ??
+  "https://web-production-96af1.up.railway.app";
 
 export async function fetchSymbols(): Promise<SymbolsResponse> {
   const url = `${API_BASE_URL}/symbols/latest`;

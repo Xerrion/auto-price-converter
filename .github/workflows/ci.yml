@@ -27,6 +27,8 @@ jobs:
 
       - name: Build extension
         run: bun run build
+        env:
+          VITE_RATES_API_BASE: ${{ secrets.VITE_RATES_API_BASE }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6

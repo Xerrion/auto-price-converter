@@ -29,6 +29,9 @@ jobs:
       - name: Run tests
         run: bun run test:run
 
+      - name: Set production API URL
+        run: echo "VITE_RATES_API_BASE=${{ secrets.VITE_RATES_API_BASE }}" >> $GITHUB_ENV
+
       - name: Build extension
         run: bun run build
 
