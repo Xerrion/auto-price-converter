@@ -1,5 +1,14 @@
 # auto-price-converter
 
+## 2.0.4
+
+### Patch Changes
+
+- Add Chrome Web Store automated publishing workflows
+
+  - Automatically upload extension to Chrome Web Store on tag push
+  - Add manual workflow to submit for Chrome Web Store review
+
 ## 2.0.3
 
 ### Patch Changes
