@@ -1,9 +1,7 @@
 <script lang="ts">
-  import type { Settings, ExchangeRates, CurrencyCode } from "../lib/types";
-  import { ALL_CURRENCIES, CURRENCY_CODES } from "../lib/types";
+  import type { Settings, ExchangeRates } from "../lib/types";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
-  import * as Select from "$lib/components/ui/select/index.js";
   import { Switch } from "$lib/components/ui/switch/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -56,19 +54,15 @@
     }
   }
 
-  async function changeCurrency(value: string | undefined) {
-    if (!settings || !value) return;
-
-    settings.targetCurrency = value as CurrencyCode;
-    await saveSettings();
-  }
-
   function openOptions() {
     chrome.runtime.openOptionsPage();
   }
 
-  function getCurrencyInfo(code: CurrencyCode) {
-    return ALL_CURRENCIES[code];
+  function formatFetchedAt(fetchedAt?: string) {
+    if (!fetchedAt) return rates?.date ?? "";
+    const parsed = new Date(fetchedAt);
+    if (Number.isNaN(parsed.getTime())) return fetchedAt;
+    return parsed.toLocaleString();
   }
 </script>
 
@@ -104,46 +98,16 @@
             />
           </div>
 
-          <div class="flex flex-col gap-2">
-            <Label for="currency-select" class="text-sm text-muted-foreground">
-              Convert to:
-            </Label>
-            <Select.Root
-              type="single"
-              value={settings.targetCurrency}
-              onValueChange={changeCurrency}
-            >
-              <Select.Trigger id="currency-select" class="w-full">
-                {#if settings.targetCurrency}
-                  {getCurrencyInfo(settings.targetCurrency).symbol}
-                  {settings.targetCurrency} - {getCurrencyInfo(
-                    settings.targetCurrency,
-                  ).name}
-                {:else}
-                  Select currency
-                {/if}
-              </Select.Trigger>
-              <Select.Content>
-                {#each CURRENCY_CODES as currency}
-                  <Select.Item value={currency}>
-                    {getCurrencyInfo(currency).symbol}
-                    {currency} - {getCurrencyInfo(currency).name}
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
-          </div>
-
           {#if rates}
             <div class="flex justify-center">
               <Badge variant="secondary" class="text-xs">
-                Rates from: {rates.date}
+                Rates from: {formatFetchedAt(rates.fetchedAt)}
               </Badge>
             </div>
           {/if}
 
           <Button variant="outline" class="w-full" onclick={openOptions}>
-            ⚙️ More Options
+            ⚙️ Options
           </Button>
         </div>
       {/if}

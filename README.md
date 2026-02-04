@@ -21,7 +21,7 @@
 ## Features
 
 - 💱 **Automatic Price Detection** — Intelligently detects prices in 12 major currencies on any website
-- 🔄 **Live Exchange Rates** — Fetches current rates from the [Frankfurter API](https://frankfurter.dev/) (updated daily by the ECB)
+- 🔄 **Live Exchange Rates** — Fetches current rates from the backend API (Fixer and Frankfurter)
 - 👁️ **Dynamic Content Support** — Watches for dynamically loaded content and converts new prices in real-time
 - ⚙️ **Highly Customizable** — Choose your target currency, number format, decimal places, and display preferences
 - 🎨 **Modern UI** — Beautiful popup and options page built with [shadcn-svelte](https://shadcn-svelte.com/)
@@ -147,6 +147,19 @@ bun install
 bun run dev
 ```
 
+### Backend API
+
+This repo includes a FastAPI backend in `backend/` that fetches rates from Fixer and Frankfurter, stores runs in Supabase, and serves `GET /rates/latest` and `GET /symbols/latest` for the extension UI.
+
+1. Follow `backend/README.md` to set up the API and Supabase tables.
+1. Set the extension API base URL:
+
+```bash
+VITE_RATES_API_BASE=https://api.your-backend.example
+```
+
+1. Update `manifest.config.ts` `host_permissions` to match your backend origin.
+
 ### Available Scripts
 
 | Command                  | Description                              |
@@ -211,18 +224,19 @@ src/
 │   ├── types.ts          # TypeScript types & constants
 │   ├── storage.ts        # Chrome storage utilities
 │   ├── messaging.ts      # Message passing helpers
-│   └── exchangeRates.ts  # Frankfurter API client
+│   └── exchangeRates.ts  # Backend rates client
 ├── icons/                # Extension icons
 └── app.css               # Global styles & theme
+backend/                  # FastAPI + Supabase rates API
 ```
 
 ### Architecture
 
 ```text
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Content Script │────▶│ Background Worker│────▶│ Frankfurter API │
-│  (price detect) │◀────│  (rate caching)  │◀────│  (ECB rates)    │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌──────────────────┐     ┌──────────────────────────┐
+│  Content Script │────▶│ Background Worker│────▶│ Rates Backend (FastAPI)  │
+│  (price detect) │◀────│  (rate caching)  │◀────│ Supabase + Providers     │
+└─────────────────┘     └──────────────────┘     └──────────────────────────┘
         │                        │
         │                        │
         ▼                        ▼
@@ -266,7 +280,7 @@ This extension respects your privacy:
 
 - ✅ Only reads page content to detect prices
 - ✅ Stores settings locally in Chrome storage
-- ✅ Only contacts the Frankfurter API for exchange rates
+- ✅ Only contacts your rates backend for exchange rates
 - ❌ Does NOT collect or transmit any personal data
 - ❌ Does NOT track your browsing history
 

@@ -1,6 +1,6 @@
 // Shared types for the Chrome extension
 
-// All currencies available from Frankfurter API (can be used as target)
+// Fallback currency metadata (backend provides the authoritative list)
 export const ALL_CURRENCIES = {
   AUD: { name: "Australian Dollar", symbol: "A$" },
   BRL: { name: "Brazilian Real", symbol: "R$" },
@@ -34,7 +34,7 @@ export const ALL_CURRENCIES = {
   ZAR: { name: "South African Rand", symbol: "R" },
 } as const;
 
-export type CurrencyCode = keyof typeof ALL_CURRENCIES;
+export type CurrencyCode = string;
 export const CURRENCY_CODES = Object.keys(ALL_CURRENCIES) as CurrencyCode[];
 
 // Major currencies that can be DETECTED on web pages (source currencies)
@@ -107,11 +107,22 @@ export interface Settings {
 export interface ExchangeRates {
   base: string;
   date: string;
+  fetchedAt?: string;
   rates: Record<string, number>;
 }
 
 export interface CachedRates {
   rates: ExchangeRates;
+  fetchedAt: number;
+}
+
+export interface SymbolsResponse {
+  provider: string;
+  symbols: Record<string, string>;
+}
+
+export interface CachedSymbols {
+  symbols: Record<string, string>;
   fetchedAt: number;
 }
 

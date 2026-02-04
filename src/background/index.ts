@@ -1,10 +1,12 @@
 // Background service worker for Chrome extension
 import type { ExchangeRates, Settings } from "../lib/types";
 import { getExchangeRates } from "../lib/exchangeRates";
+import { getSymbols } from "../lib/symbols";
 import { getSettings, saveSettings, getCachedRates } from "../lib/storage";
 
 // Store rates in memory for quick access
 let cachedRates: ExchangeRates | null = null;
+let cachedSymbols: Record<string, string> | null = null;
 
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -26,12 +28,14 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
   // Fetch exchange rates on install/update
   await initializeRates();
+  await initializeSymbols();
 });
 
 // Fetch rates on startup
 chrome.runtime.onStartup.addListener(async () => {
   console.log("Extension started");
   await initializeRates();
+  await initializeSymbols();
 });
 
 // Initialize exchange rates
@@ -41,6 +45,18 @@ async function initializeRates(): Promise<void> {
     console.log("Exchange rates initialized:", cachedRates.date);
   } catch (error) {
     console.error("Failed to fetch exchange rates:", error);
+  }
+}
+
+async function initializeSymbols(): Promise<void> {
+  try {
+    cachedSymbols = await getSymbols();
+    console.log(
+      "Currency symbols initialized:",
+      Object.keys(cachedSymbols).length,
+    );
+  } catch (error) {
+    console.error("Failed to fetch symbols:", error);
   }
 }
 
@@ -56,6 +72,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case "GET_SETTINGS":
       handleGetSettings(sendResponse);
+      return true;
+
+    case "GET_SYMBOLS":
+      handleGetSymbols(sendResponse);
       return true;
 
     case "SAVE_SETTINGS":
@@ -114,6 +134,20 @@ async function handleGetSettings(
   } catch (error) {
     console.error("Failed to get settings:", error);
     sendResponse({ error: "Failed to get settings" });
+  }
+}
+
+async function handleGetSymbols(
+  sendResponse: (response: unknown) => void,
+): Promise<void> {
+  try {
+    if (!cachedSymbols) {
+      cachedSymbols = await getSymbols();
+    }
+    sendResponse({ symbols: cachedSymbols });
+  } catch (error) {
+    console.error("Failed to get symbols:", error);
+    sendResponse({ error: "Failed to get currency symbols" });
   }
 }
 

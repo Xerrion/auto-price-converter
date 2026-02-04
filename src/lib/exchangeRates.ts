@@ -1,4 +1,4 @@
-// Exchange rates API utilities using Frankfurter API
+// Exchange rates API utilities using backend API
 
 import currency from "currency.js";
 import type {
@@ -9,15 +9,15 @@ import type {
 } from "./types";
 import { getCachedRates, setCachedRates } from "./storage";
 
-const API_BASE_URL = "https://api.frankfurter.dev/v1";
+const API_BASE_URL =
+  import.meta.env.VITE_RATES_API_BASE ?? "https://api.your-backend.example";
 
 /**
- * Fetches the latest exchange rates from the Frankfurter API
+ * Fetches the latest exchange rates from the backend API
  * Uses EUR as base currency and fetches ALL available currencies
  */
 export async function fetchLatestRates(): Promise<ExchangeRates> {
-  // Fetch all currencies (no symbols filter = all currencies)
-  const url = `${API_BASE_URL}/latest?base=EUR`;
+  const url = `${API_BASE_URL}/rates/latest`;
 
   const response = await fetch(url);
 
@@ -27,9 +27,14 @@ export async function fetchLatestRates(): Promise<ExchangeRates> {
 
   const data = await response.json();
 
+  if (data.base && data.base !== "EUR") {
+    throw new Error(`Unexpected base currency from backend: ${data.base}`);
+  }
+
   return {
     base: "EUR",
     date: data.date,
+    fetchedAt: data.fetched_at ?? undefined,
     rates: {
       EUR: 1,
       ...data.rates,

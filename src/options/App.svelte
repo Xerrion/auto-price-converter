@@ -36,6 +36,7 @@
   });
 
   let rates = $state<ExchangeRates | null>(null);
+  let symbols = $state<Record<string, string> | null>(null);
   let loading = $state(true);
   let cleanupThemeWatcher: (() => void) | null = null;
 
@@ -46,10 +47,12 @@
 
   async function loadData() {
     try {
-      const [settingsResponse, ratesResponse] = await Promise.all([
-        chrome.runtime.sendMessage({ type: "GET_SETTINGS" }),
-        chrome.runtime.sendMessage({ type: "GET_RATES" }),
-      ]);
+      const [settingsResponse, ratesResponse, symbolsResponse] =
+        await Promise.all([
+          chrome.runtime.sendMessage({ type: "GET_SETTINGS" }),
+          chrome.runtime.sendMessage({ type: "GET_RATES" }),
+          chrome.runtime.sendMessage({ type: "GET_SYMBOLS" }),
+        ]);
 
       if (settingsResponse.settings) {
         settings = settingsResponse.settings;
@@ -60,6 +63,7 @@
       if (ratesResponse.rates) {
         rates = ratesResponse.rates;
       }
+      symbols = symbolsResponse.symbols ?? null;
       loading = false;
     } catch (err) {
       console.error("Failed to load data:", err);
@@ -97,8 +101,35 @@
     }
   }
 
+  const currencyMap = ALL_CURRENCIES as Record<
+    string,
+    { name: string; symbol: string }
+  >;
+
   function getCurrencyInfo(code: CurrencyCode) {
-    return ALL_CURRENCIES[code];
+    return currencyMap[code];
+  }
+
+  function getCurrencyName(code: CurrencyCode) {
+    return symbols?.[code] ?? getCurrencyInfo(code)?.name ?? code;
+  }
+
+  function getCurrencySymbol(code: CurrencyCode) {
+    return getCurrencyInfo(code)?.symbol ?? code;
+  }
+
+  function getCurrencyList(): string[] {
+    if (symbols) {
+      return Object.keys(symbols).sort();
+    }
+    return CURRENCY_CODES;
+  }
+
+  function formatFetchedAt(fetchedAt?: string) {
+    if (!fetchedAt) return rates?.date ?? "";
+    const parsed = new Date(fetchedAt);
+    if (Number.isNaN(parsed.getTime())) return fetchedAt;
+    return parsed.toLocaleString();
   }
 </script>
 
@@ -155,19 +186,18 @@
             >
               <Select.Trigger id="target-currency" class="w-full">
                 {#if settings.targetCurrency}
-                  {getCurrencyInfo(settings.targetCurrency).symbol}
-                  {settings.targetCurrency} - {getCurrencyInfo(
-                    settings.targetCurrency,
-                  ).name}
+                  {getCurrencySymbol(settings.targetCurrency)}
+                  {settings.targetCurrency} -
+                  {getCurrencyName(settings.targetCurrency)}
                 {:else}
                   Select currency
                 {/if}
               </Select.Trigger>
               <Select.Content>
-                {#each CURRENCY_CODES as currency}
+                {#each getCurrencyList() as currency}
                   <Select.Item value={currency}>
-                    {getCurrencyInfo(currency).symbol}
-                    {currency} - {getCurrencyInfo(currency).name}
+                    {getCurrencySymbol(currency)}
+                    {currency} - {getCurrencyName(currency)}
                   </Select.Item>
                 {/each}
               </Select.Content>
@@ -330,7 +360,9 @@
           {#if rates}
             <div class="space-y-4">
               <div class="flex flex-wrap gap-2">
-                <Badge variant="outline">Last updated: {rates.date}</Badge>
+                <Badge variant="outline">
+                  Last updated: {formatFetchedAt(rates.fetchedAt)}
+                </Badge>
                 <Badge variant="outline">Base: {rates.base}</Badge>
               </div>
 
