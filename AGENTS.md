@@ -61,6 +61,38 @@ bun run check            # Run svelte-check for type checking
 bun run generate-icons   # Generate extension icons from source
 ```
 
+### Versioning & Releases
+
+This project uses **Changesets** for version management and changelog generation.
+
+#### Release Workflow
+
+1. **Create a changeset** - Describe your changes:
+   ```bash
+   bun run changeset
+   ```
+   This creates a file in `.changeset/` describing the change and version bump type (patch/minor/major).
+
+2. **Bump version** - When ready to release:
+   ```bash
+   bun run version
+   ```
+   This consumes changesets, updates `package.json`, `manifest.config.ts`, and appends to `CHANGELOG.md`.
+
+3. **Commit & push** - Commit the version bump.
+
+4. **Create a tag** - Triggers the release workflow:
+   ```bash
+   git tag v<version>
+   git push origin v<version>
+   ```
+
+#### Notes
+
+- The `tag-release.yml` workflow automatically creates tags when `package.json` version changes on main
+- `GITHUB_TOKEN` environment variable is required for `bun run version` to generate GitHub-linked changelogs
+- Changelog entries are extracted from `CHANGELOG.md` and used in GitHub Release notes
+
 ## Project Structure
 
 ```text
