@@ -2,44 +2,20 @@
 // Coordinates initialization, message handling, and price scanning
 
 import type { Settings, ExchangeRates } from "../lib/types";
+import type { PageContext } from "./context";
+import { buildPageContext } from "./context";
 
-import { injectStyles, isInViewport } from "./utils/domUtils";
-import {
-  setupMutationObserver,
-  setupIntersectionObserver,
-  disconnectMutationObserver,
-  disconnectIntersectionObserver,
-} from "./utils/observers";
-import {
-  processPriceContainers,
-  convertPriceElement,
-} from "./scanners/priceContainers";
-import { processTextPrices } from "./scanners/textPrices";
+import { injectStyles } from "./utils/domUtils";
+import { setupMutationObserver, disconnectMutationObserver } from "./utils/observers";
 import { revertConvertedPrices } from "./utils/revert";
+import { SmartScanner } from "./scanner";
 
 console.log("Price Converter: Content script loaded");
 
 let settings: Settings | null = null;
 let exchangeRates: ExchangeRates | null = null;
-
-// ============================================================================
-// SCANNING
-// ============================================================================
-
-/**
- * Scan container for prices and convert them
- */
-function scanAndConvertPrices(container: HTMLElement): void {
-  if (!settings || !exchangeRates) return;
-
-  // Step 1: Process e-commerce price containers
-  processPriceContainers(container, settings, exchangeRates);
-
-  // Step 2: Process inline text prices (only in viewport)
-  if (isInViewport(container)) {
-    processTextPrices(container, settings, exchangeRates);
-  }
-}
+let pageContext: PageContext | null = null;
+let scanner: SmartScanner | null = null;
 
 // ============================================================================
 // INITIALIZATION
@@ -52,6 +28,14 @@ async function init(): Promise<void> {
   console.log("Price Converter: Initializing on", window.location.href);
 
   try {
+    // Build page context first (for currency detection and locale)
+    pageContext = await buildPageContext();
+    console.log("Price Converter: Page context", {
+      locale: pageContext.locale,
+      currency: pageContext.currency,
+      currencySource: pageContext.currencySource,
+    });
+
     const [settingsResponse, ratesResponse] = await Promise.all([
       chrome.runtime.sendMessage({ type: "GET_SETTINGS" }),
       chrome.runtime.sendMessage({ type: "GET_RATES" }),
@@ -62,6 +46,9 @@ async function init(): Promise<void> {
 
     console.log("Price Converter: Settings loaded", settings);
     console.log("Price Converter: Rates loaded", exchangeRates?.date);
+    console.log(
+      `Price Converter: ${Object.keys(exchangeRates?.rates || {}).length} currencies supported`,
+    );
 
     if (settings?.enabled && exchangeRates) {
       startConversion();
@@ -75,31 +62,34 @@ async function init(): Promise<void> {
  * Start the price conversion process
  */
 function startConversion(): void {
-  if (!settings || !exchangeRates) return;
+  if (!settings || !exchangeRates || !pageContext) return;
 
   injectStyles();
 
-  // Setup lazy loading for off-screen elements
-  setupIntersectionObserver((element) => {
-    if (settings && exchangeRates) {
-      convertPriceElement(element, settings, exchangeRates);
-    }
+  // Create the smart scanner with dynamic patterns from exchange rates
+  scanner = new SmartScanner({
+    settings,
+    exchangeRates,
+    pageContext,
   });
 
   // Initial scan
-  scanAndConvertPrices(document.body);
+  scanner.scan(document.body);
 
   // Watch for dynamic content
-  setupMutationObserver(settings, exchangeRates, scanAndConvertPrices);
+  setupMutationObserver((container: HTMLElement) => {
+    scanner?.scan(container);
+  });
 }
 
 /**
  * Stop the price conversion process
  */
 function stopConversion(): void {
+  scanner?.disconnect();
+  scanner = null;
   revertConvertedPrices();
   disconnectMutationObserver();
-  disconnectIntersectionObserver();
 }
 
 // ============================================================================
@@ -154,9 +144,11 @@ function handleRatesUpdate(newRates: ExchangeRates): void {
   exchangeRates = newRates;
   console.log("Price Converter: Rates updated", exchangeRates.date);
 
-  if (settings?.enabled) {
-    revertConvertedPrices();
-    scanAndConvertPrices(document.body);
+  if (settings?.enabled && pageContext) {
+    // Reset scanner and rescan
+    scanner?.reset();
+    scanner?.updateOptions({ exchangeRates });
+    scanner?.scan(document.body);
   }
 }
 
