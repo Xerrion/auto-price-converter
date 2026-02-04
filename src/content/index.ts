@@ -8,6 +8,7 @@ import {
   setupMutationObserver,
   setupIntersectionObserver,
   disconnectMutationObserver,
+  disconnectIntersectionObserver,
 } from "./utils/observers";
 import {
   processPriceContainers,
@@ -98,6 +99,7 @@ function startConversion(): void {
 function stopConversion(): void {
   revertConvertedPrices();
   disconnectMutationObserver();
+  disconnectIntersectionObserver();
 }
 
 // ============================================================================

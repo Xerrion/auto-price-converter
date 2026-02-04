@@ -3,7 +3,7 @@
 import type { Settings, CachedRates, CachedSymbols } from "./types";
 import { NUMBER_FORMATS, THEMES } from "./types";
 
-const DEFAULT_SETTINGS: Settings = {
+export const DEFAULT_SETTINGS: Settings = {
   enabled: true,
   targetCurrency: "EUR",
   showOriginalPrice: true,
