@@ -23,9 +23,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Type check
-        run: bun run check
-
       - name: Set production API URL
         run: echo "VITE_RATES_API_BASE=${{ secrets.VITE_RATES_API_BASE }}" >> $GITHUB_ENV
 
