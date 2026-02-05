@@ -1,7 +1,6 @@
 // Observer setup for dynamic content detection
 // Handles MutationObserver and IntersectionObserver
 
-import type { Settings, ExchangeRates } from "../../lib/types";
 import { CONVERTED_ATTR, PENDING_ATTR } from "./domUtils";
 
 let observer: MutationObserver | null = null;
@@ -17,12 +16,10 @@ type ConvertCallback = (element: HTMLElement) => void;
 /**
  * Setup MutationObserver to detect dynamically added content
  * Uses debouncing to batch multiple mutations into a single RAF callback
+ *
+ * @param onNewContent - Callback to process new elements
  */
-export function setupMutationObserver(
-  settings: Settings | null,
-  exchangeRates: ExchangeRates | null,
-  onNewContent: ScanCallback,
-): void {
+export function setupMutationObserver(onNewContent: ScanCallback): void {
   if (observer) {
     observer.disconnect();
   }
@@ -35,8 +32,6 @@ export function setupMutationObserver(
   }
 
   observer = new MutationObserver((mutations) => {
-    if (!settings?.enabled || !exchangeRates) return;
-
     // Collect all new elements into the pending set
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {

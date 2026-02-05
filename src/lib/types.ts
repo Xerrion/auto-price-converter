@@ -30,6 +30,7 @@ export const ALL_CURRENCIES = {
   SGD: { name: "Singapore Dollar", symbol: "S$" },
   THB: { name: "Thai Baht", symbol: "฿" },
   TRY: { name: "Turkish Lira", symbol: "₺" },
+  UAH: { name: "Ukrainian Hryvnia", symbol: "₴" },
   USD: { name: "United States Dollar", symbol: "$" },
   ZAR: { name: "South African Rand", symbol: "R" },
 } as const;
@@ -39,6 +40,7 @@ export const CURRENCY_CODES = Object.keys(ALL_CURRENCIES) as CurrencyCode[];
 
 // Major currencies that can be DETECTED on web pages (source currencies)
 export const MAJOR_CURRENCIES = [
+  // Major Western
   "EUR",
   "USD",
   "GBP",
@@ -48,27 +50,78 @@ export const MAJOR_CURRENCIES = [
   "AUD",
   "NZD",
   "CNY",
+  // Nordic
   "SEK",
   "NOK",
   "DKK",
+  "ISK",
+  // Eastern European
+  "PLN",
+  "CZK",
+  "HUF",
+  "RON",
+  "UAH",
+  "TRY",
+  // Asia Pacific
+  "INR",
+  "KRW",
+  "SGD",
+  "HKD",
+  "THB",
+  "PHP",
+  "IDR",
+  "MYR",
+  // Americas
+  "BRL",
+  "MXN",
+  // Middle East & Africa
+  "ZAR",
+  "ILS",
 ] as const;
 
 export type MajorCurrency = (typeof MAJOR_CURRENCIES)[number];
 
-// Currency symbols mapping for detection (only major currencies)
-export const CURRENCY_SYMBOLS: Record<string, MajorCurrency[]> = {
+// Currency symbols mapping for detection
+// Maps symbols to possible currencies (first is default for ambiguous symbols)
+export const CURRENCY_SYMBOLS: Readonly<Record<string, MajorCurrency[]>> = {
+  // Single character symbols
   "€": ["EUR"],
-  $: ["USD", "CAD", "AUD", "NZD"],
+  $: ["USD", "CAD", "AUD", "NZD", "MXN", "SGD", "HKD"],
   "£": ["GBP"],
   "¥": ["JPY", "CNY"],
+  "₴": ["UAH"],
+  "₺": ["TRY"],
+  "₹": ["INR"],
+  "₩": ["KRW"],
+  "฿": ["THB"],
+  "₪": ["ILS"],
+  "₱": ["PHP"],
+
+  // Multi-character symbols
+  "CA$": ["CAD"],
+  "A$": ["AUD"],
+  "NZ$": ["NZD"],
+  "R$": ["BRL"],
+  "S$": ["SGD"],
+  "HK$": ["HKD"],
+  "MX$": ["MXN"],
+
+  // Text-based symbols
+  kr: ["SEK", "NOK", "DKK", "ISK"],
+  "zł": ["PLN"],
+  "Kč": ["CZK"],
+  Ft: ["HUF"],
+  lei: ["RON"],
+  Rp: ["IDR"],
+  RM: ["MYR"],
+  R: ["ZAR"],
   CHF: ["CHF"],
-  CA$: ["CAD"],
-  A$: ["AUD"],
-  NZ$: ["NZD"],
-  kr: ["SEK", "NOK", "DKK"],
+
+  // ISO code symbols (for direct code matching)
   SEK: ["SEK"],
   NOK: ["NOK"],
   DKK: ["DKK"],
+  ISK: ["ISK"],
 };
 
 // Number format options for thousands/decimal separators
