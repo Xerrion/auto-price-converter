@@ -9,38 +9,48 @@
 </p>
 
 <p align="center">
+  <a href="https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg">
+    <img src="https://img.shields.io/chrome-web-store/v/njogpdjiklbgihogkdonlnhlonfhapjg?label=Chrome%20Web%20Store" alt="Chrome Web Store Version">
+  </a>
+  <a href="https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg">
+    <img src="https://img.shields.io/chrome-web-store/users/njogpdjiklbgihogkdonlnhlonfhapjg" alt="Chrome Web Store Users">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/xerrion/auto-price-converter" alt="License">
+  </a>
+</p>
+
+<p align="center">
   <a href="#features">Features</a> •
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
-  <a href="#development">Development</a> •
-  <a href="#supported-currencies">Currencies</a>
+  <a href="#supported-currencies">Currencies</a> •
+  <a href="#privacy">Privacy</a>
 </p>
 
 ---
 
 ## Features
 
-- 💱 **Automatic Price Detection** — Intelligently detects prices in 12 major currencies on any website
-- 🔄 **Live Exchange Rates** — Fetches current rates from the backend API (Fixer and Frankfurter)
-- 👁️ **Dynamic Content Support** — Watches for dynamically loaded content and converts new prices in real-time
-- ⚙️ **Highly Customizable** — Choose your target currency, number format, decimal places, and display preferences
-- 🎨 **Modern UI** — Beautiful popup and options page built with [shadcn-svelte](https://shadcn-svelte.com/)
-- 🔔 **Toast Notifications** — Instant feedback for settings changes and rate updates
-- 🌐 **Platform-Aware** — Special handling for popular e-commerce sites (Amazon, eBay, etc.)
-
-## Screenshots
-
-|                Popup                |         Options         |
-| :---------------------------------: | :---------------------: |
-| Quick access to toggle and settings | Full configuration page |
+- **Automatic Price Detection** — Intelligently detects prices in 12 major currencies on any website
+- **Live Exchange Rates** — Fetches current rates from reliable sources (European Central Bank)
+- **Dynamic Content Support** — Watches for dynamically loaded content and converts new prices in real-time
+- **Highly Customizable** — Choose your target currency, number format, decimal places, and display preferences
+- **Modern UI** — Beautiful popup and options page for easy configuration
+- **Platform-Aware** — Special handling for popular e-commerce sites (Amazon, eBay, etc.)
 
 ## Installation
 
 ### From Chrome Web Store
 
-> Coming soon
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg">
+    <img src="https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png" alt="Available in the Chrome Web Store" width="248">
+  </a>
+</p>
 
-### Manual Installation (Developer Mode)
+<details>
+<summary>Manual Installation (Developer Mode)</summary>
 
 1. Download or clone this repository
 2. Install dependencies and build:
@@ -52,6 +62,8 @@
 4. Enable **Developer mode** (toggle in the top right)
 5. Click **Load unpacked**
 6. Select the `dist` folder from this project
+
+</details>
 
 ## Usage
 
@@ -116,17 +128,44 @@ You can convert **TO** any of these 30 currencies:
 | MYR | NOK | NZD | PHP | PLN | RON |
 | SEK | SGD | THB | TRY | USD | ZAR |
 
-## Development
+## Privacy
+
+This extension respects your privacy:
+
+- Only reads page content to detect prices
+- Stores settings locally in Chrome storage
+- Only contacts exchange rate services for current rates
+- Does **NOT** collect or transmit any personal data
+- Does **NOT** track your browsing history
+
+## Credits
+
+- Exchange rates provided by [Frankfurter API](https://frankfurter.dev/) (sourced from the European Central Bank)
+- UI components from [shadcn-svelte](https://shadcn-svelte.com/)
+- Icons from [Lucide](https://lucide.dev/)
+
+## Support
+
+If you find this extension useful, consider supporting its development:
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Me-ff5f5f?logo=ko-fi&logoColor=white)](https://ko-fi.com/xerrion)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=github)](https://github.com/sponsors/xerrion)
+
+---
+
+## For Developers
+
+<details>
+<summary>Development Setup & Contributing</summary>
 
 ### Tech Stack
 
-- ⚡ **[Vite](https://vitejs.dev/)** — Fast development and optimized builds
-- 🚀 **[Svelte 5](https://svelte.dev/)** — Reactive UI with runes
-- 📘 **[TypeScript](https://www.typescriptlang.org/)** — Full type safety with Chrome types
-- 🎨 **[Tailwind CSS v4](https://tailwindcss.com/)** — Utility-first styling
-- 🧩 **[shadcn-svelte](https://shadcn-svelte.com/)** — Beautiful, accessible components
-- 🔔 **[Sonner](https://sonner.dev/)** — Toast notifications
-- 🧩 **Manifest V3** — Modern Chrome extension APIs
+- [Vite](https://vitejs.dev/) — Fast development and optimized builds
+- [Svelte 5](https://svelte.dev/) — Reactive UI with runes
+- [TypeScript](https://www.typescriptlang.org/) — Full type safety
+- [Tailwind CSS v4](https://tailwindcss.com/) — Utility-first styling
+- [shadcn-svelte](https://shadcn-svelte.com/) — Beautiful, accessible components
+- Chrome Manifest V3 — Modern extension APIs
 
 ### Prerequisites
 
@@ -147,19 +186,6 @@ bun install
 bun run dev
 ```
 
-### Backend API
-
-This repo includes a FastAPI backend in `backend/` that fetches rates from Fixer and Frankfurter, stores runs in Supabase, and serves `GET /rates/latest` and `GET /symbols/latest` for the extension UI.
-
-1. Follow `backend/README.md` to set up the API and Supabase tables.
-1. Set the extension API base URL:
-
-```bash
-VITE_RATES_API_BASE=https://api.your-backend.example
-```
-
-1. Update `manifest.config.ts` `host_permissions` to match your backend origin.
-
 ### Available Scripts
 
 | Command                  | Description                              |
@@ -170,81 +196,6 @@ VITE_RATES_API_BASE=https://api.your-backend.example
 | `bun run test`           | Run tests with Vitest                    |
 | `bun run test:run`       | Run tests once                           |
 | `bun run generate-icons` | Generate icon sizes from source          |
-
-### Versioning & Releases
-
-This project follows **SemVer** and uses **Changesets** to manage versions and changelogs. The extension version is kept in sync across `package.json` and `manifest.config.ts`. Release notes are auto-generated from merged Changesets in CI.
-
-#### Workflow
-
-1. Create a changeset for your change:
-
-```bash
-bun run changeset
-```
-
-1. Apply version bumps and sync the manifest:
-
-```bash
-bun run version
-```
-
-1. Commit the changes and tag the release:
-
-```bash
-git commit -am "chore: release"
-git tag vX.Y.Z
-git push --follow-tags
-```
-
-> Tip: CI opens a release PR automatically. When merged into `main`, CI tags `vX.Y.Z` and the `release` workflow publishes the GitHub release ZIP.
-
-### Project Structure
-
-```text
-src/
-├── background/           # Service worker
-│   └── index.ts          # Fetches & caches exchange rates
-├── content/              # Content script
-│   ├── index.ts          # Main entry, DOM manipulation
-│   ├── priceParser.ts    # Parse price strings to numbers
-│   ├── priceExtractor.ts # Extract prices from DOM
-│   ├── formatter.ts      # Format converted prices
-│   └── platforms.ts      # Platform-specific selectors
-├── popup/                # Extension popup
-│   ├── App.svelte        # Popup UI component
-│   ├── index.html        # Popup HTML entry
-│   └── main.ts           # Popup entry point
-├── options/              # Options page
-│   ├── App.svelte        # Options UI component
-│   ├── index.html        # Options HTML entry
-│   └── main.ts           # Options entry point
-├── lib/                  # Shared utilities
-│   ├── components/ui/    # shadcn-svelte components
-│   ├── types.ts          # TypeScript types & constants
-│   ├── storage.ts        # Chrome storage utilities
-│   ├── messaging.ts      # Message passing helpers
-│   └── exchangeRates.ts  # Backend rates client
-├── icons/                # Extension icons
-└── app.css               # Global styles & theme
-backend/                  # FastAPI + Supabase rates API
-```
-
-### Architecture
-
-```text
-┌─────────────────┐     ┌──────────────────┐     ┌──────────────────────────┐
-│  Content Script │────▶│ Background Worker│────▶│ Rates Backend (FastAPI)  │
-│  (price detect) │◀────│  (rate caching)  │◀────│ Supabase + Providers     │
-└─────────────────┘     └──────────────────┘     └──────────────────────────┘
-        │                        │
-        │                        │
-        ▼                        ▼
-┌─────────────────┐     ┌──────────────────┐
-│   Popup UI      │     │   Options Page   │
-│ (quick toggle)  │     │ (full settings)  │
-└─────────────────┘     └──────────────────┘
-```
 
 ### Testing
 
@@ -262,9 +213,9 @@ bun run test:run
 bun run build
 ```
 
-The built extension will be in the `dist` folder, ready to be loaded in Chrome or packaged for the Chrome Web Store.
+The built extension will be in the `dist` folder.
 
-## Contributing
+### Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -274,28 +225,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## Privacy
-
-This extension respects your privacy:
-
-- ✅ Only reads page content to detect prices
-- ✅ Stores settings locally in Chrome storage
-- ✅ Only contacts your rates backend for exchange rates
-- ❌ Does NOT collect or transmit any personal data
-- ❌ Does NOT track your browsing history
-
-## Credits
-
-- Exchange rates provided by [Frankfurter API](https://frankfurter.dev/) (sourced from the European Central Bank)
-- UI components from [shadcn-svelte](https://shadcn-svelte.com/)
-- Icons from [Lucide](https://lucide.dev/)
-
-## Support
-
-If you find this extension useful, consider supporting its development:
-
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Me-ff5f5f?logo=ko-fi&logoColor=white)](https://ko-fi.com/xerrion)
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?logo=github)](https://github.com/sponsors/xerrion)
+</details>
 
 ## License
 
