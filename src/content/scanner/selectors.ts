@@ -4,6 +4,9 @@
 /**
  * Class and attribute patterns that commonly contain prices
  * Used for Phase 1: Fast CSS pre-filter
+ *
+ * NOTE: Intentionally excludes overly broad selectors like [class*="value"]
+ * which match too many non-price elements (forms, documentation, etc.)
  */
 export const PRICE_CLASS_PATTERNS = [
   // Generic price indicators
@@ -20,14 +23,14 @@ export const PRICE_CLASS_PATTERNS = [
   '[class*="Money"]',
   '[class*="currency"]',
   '[class*="Currency"]',
-  '[class*="value"]',
-  '[class*="Value"]',
+  // NOTE: Removed [class*="value"] and [class*="Value"] - too broad,
+  // matches forms, documentation, and many non-price elements
 
-  // Data attributes
+  // Data attributes - only specific price-related ones
   "[data-price]",
   "[data-cost]",
   "[data-amount]",
-  "[data-value]",
+  // NOTE: Removed [data-value] - too broad, matches many non-price elements
   '[data-qa*="price"]',
   '[data-qa*="Price"]',
   '[data-testid*="price"]',

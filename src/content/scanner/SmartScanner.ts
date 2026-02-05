@@ -9,8 +9,7 @@ import { isInViewport, CONVERTED_ATTR } from "../utils/domUtils";
 
 import { buildPatterns, type PricePatterns } from "./patterns";
 import { LIKELY_PRICE_SELECTORS, EXCLUDED_TAGS } from "./selectors";
-import { extractVisibleText } from "./textExtractor";
-import { detectPrices, containsCurrencyIndicators } from "./priceDetector";
+import { containsCurrencyIndicators } from "./priceDetector";
 import { replacePrices, isConverted, isInsideConverted } from "./replacer";
 
 // Polyfill for requestIdleCallback
@@ -27,6 +26,13 @@ export interface ScannerOptions {
   exchangeRates: ExchangeRates;
   pageContext: PageContext;
 }
+
+/**
+ * Guard constants to prevent false positives on large text blocks
+ */
+
+/** Maximum text length for an element to be considered a price container */
+const MAX_PRICE_ELEMENT_TEXT_LENGTH = 200;
 
 /**
  * SmartScanner - Hybrid price detection with 3-phase scanning
@@ -236,18 +242,13 @@ export class SmartScanner {
     // Skip if already converted
     if (isConverted(element) || isInsideConverted(element)) return;
 
-    // Extract visible text
-    const text = extractVisibleText(element);
-    if (!text) return;
-
-    // Detect prices
-    const matches = detectPrices(text, this.options.pageContext, this.patterns);
-    if (matches.length === 0) return;
-
-    // Replace prices in DOM
-    replacePrices(element, matches, {
+    // Replace prices in DOM using text-node level replacement
+    // Detection now happens inside replacePrices for each text node
+    replacePrices(element, {
       settings: this.options.settings,
       exchangeRates: this.options.exchangeRates,
+      patterns: this.patterns,
+      pageContext: this.options.pageContext,
     });
   }
 
@@ -268,8 +269,15 @@ export class SmartScanner {
 
   /**
    * Check if element is a "leaf" price element (no nested price containers)
+   * Also validates that the element isn't too large to be a price container
    */
   private isLeafPriceElement(element: HTMLElement): boolean {
+    // Guard: Skip elements with too much text
+    // Large text blocks are unlikely to be price containers
+    // This prevents processing documentation pages, articles, etc.
+    const text = element.textContent || "";
+    if (text.length > MAX_PRICE_ELEMENT_TEXT_LENGTH) return false;
+
     // If it has child elements matching price selectors, it's not a leaf
     try {
       const childPrices = element.querySelectorAll(LIKELY_PRICE_SELECTORS);

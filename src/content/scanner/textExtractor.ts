@@ -127,3 +127,73 @@ export function getTextNodes(element: HTMLElement): Text[] {
 
   return textNodes;
 }
+
+/**
+ * Get visible text nodes suitable for price replacement
+ * Filters out nodes inside hidden/sr-only elements and scripts
+ * 
+ * Note: aria-hidden="true" elements ARE included because they are
+ * visually displayed (just hidden from screen readers)
+ *
+ * @param element - The element to search
+ * @returns Array of visible text nodes
+ */
+export function getVisibleTextNodes(element: HTMLElement): Text[] {
+  const textNodes: Text[] = [];
+
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+
+      // Skip excluded tags (script, style, etc.)
+      if (EXCLUDED_TAGS.has(parent.tagName.toLowerCase())) {
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      // Skip screen-reader-only / visually-hidden elements by class
+      // These are hidden from visual display but read by screen readers
+      const className = parent.className || "";
+      if (typeof className === "string") {
+        if (HIDDEN_CLASSES.some((cls) => className.includes(cls))) {
+          return NodeFilter.FILTER_REJECT;
+        }
+      }
+
+      // Note: We do NOT skip aria-hidden="true" elements because they ARE
+      // visually displayed. aria-hidden only hides from screen readers.
+
+      // Skip display:none elements (fast check via offsetParent)
+      // Note: offsetParent is null for display:none, but also for body/fixed elements
+      if (
+        parent.tagName !== "BODY" &&
+        parent.tagName !== "HTML" &&
+        !parent.offsetParent
+      ) {
+        const style = getComputedStyle(parent);
+        if (style.display === "none") return NodeFilter.FILTER_REJECT;
+        if (style.position !== "fixed" && style.position !== "absolute") {
+          return NodeFilter.FILTER_REJECT;
+        }
+      }
+
+      // Skip visibility:hidden
+      if (parent.style.visibility === "hidden") {
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      // Skip empty text nodes
+      const text = node.textContent || "";
+      if (!text.trim()) return NodeFilter.FILTER_REJECT;
+
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    textNodes.push(node as Text);
+  }
+
+  return textNodes;
+}
