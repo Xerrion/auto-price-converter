@@ -12,17 +12,6 @@ export interface CurrencyContext {
   currency: string | null;
 }
 
-// Multi-character symbol to currency code mapping
-const MULTI_CHAR_MAP: Readonly<Record<string, MajorCurrency>> = {
-  "CA$": "CAD",
-  "A$": "AUD",
-  "NZ$": "NZD",
-  "R$": "BRL",
-  "S$": "SGD",
-  "HK$": "HKD",
-  "MX$": "MXN",
-};
-
 /**
  * Resolve a currency symbol or code to a MajorCurrency
  * Uses context to disambiguate symbols that could be multiple currencies
@@ -38,22 +27,18 @@ export function resolveCurrency(
     return upper as MajorCurrency;
   }
 
-  // 2. Multi-character symbol lookup
-  const multiChar = MULTI_CHAR_MAP[symbol];
-  if (multiChar) return multiChar;
-
-  // 3. Single/text symbol lookup from CURRENCY_SYMBOLS
+  // 2. Symbol lookup from CURRENCY_SYMBOLS (handles single, multi-char, and text symbols)
   const candidates = CURRENCY_SYMBOLS[symbol];
   if (!candidates?.length) return null;
 
-  // 4. Single candidate - use it
+  // 3. Single candidate - use it
   if (candidates.length === 1) return candidates[0];
 
-  // 5. Multiple candidates - use context to disambiguate
+  // 4. Multiple candidates - use context to disambiguate
   if (context?.currency && candidates.includes(context.currency as MajorCurrency)) {
     return context.currency as MajorCurrency;
   }
 
-  // 6. Default to first candidate
+  // 5. Default to first candidate
   return candidates[0];
 }

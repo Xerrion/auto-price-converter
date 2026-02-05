@@ -1,7 +1,12 @@
 // Currency detection utilities
 // Detects currency symbols and codes in text
 
-import { MAJOR_CURRENCIES } from "$lib/types";
+import {
+  MAJOR_CURRENCIES,
+  SINGLE_SYMBOLS,
+  MULTI_CHAR_SYMBOLS,
+  TEXT_SYMBOLS,
+} from "$lib/types";
 
 export interface CurrencyMatch {
   symbol: string; // Raw matched text: €, $, USD, zł, CA$
@@ -14,18 +19,14 @@ export interface CurrencyMatch {
 const ISO_CODES = MAJOR_CURRENCIES.join("|");
 const ISO_CODE_REGEX = new RegExp(`\\b(${ISO_CODES})\\b`, "i");
 
-// Multi-character symbols (must check before single $)
-const MULTI_CHAR_SYMBOLS = ["CA\\$", "A\\$", "NZ\\$", "R\\$", "S\\$", "HK\\$", "MX\\$"];
+// Build regex patterns from centralized constants
 const MULTI_CHAR_REGEX = new RegExp(`(${MULTI_CHAR_SYMBOLS.join("|")})`, "");
-
-// Single character currency symbols
-const SINGLE_SYMBOLS = ["€", "\\$", "£", "¥", "₴", "₺", "₹", "₩", "฿", "₪", "₱"];
 const SINGLE_SYMBOL_REGEX = new RegExp(`([${SINGLE_SYMBOLS.join("")}])`, "");
-
-// Text-based symbols
 // Note: \b doesn't work with Unicode chars like ł, č, so we use lookarounds
-const TEXT_SYMBOLS = ["zł", "Kč", "Ft", "lei", "Rp", "RM", "kr", "CHF"];
-const TEXT_SYMBOL_REGEX = new RegExp(`(?<![a-zA-Z])(${TEXT_SYMBOLS.join("|")})(?![a-zA-Z])`, "");
+const TEXT_SYMBOL_REGEX = new RegExp(
+  `(?<![a-zA-Z])(${TEXT_SYMBOLS.join("|")})(?![a-zA-Z])`,
+  "",
+);
 
 // Pattern to find digits (to determine position)
 const DIGIT_REGEX = /\d/;

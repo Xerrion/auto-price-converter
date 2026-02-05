@@ -124,6 +124,36 @@ export const CURRENCY_SYMBOLS: Readonly<Record<string, MajorCurrency[]>> = {
   ISK: ["ISK"],
 };
 
+// ============================================
+// Derived detection constants (used by currencyDetector.ts)
+// These are computed from CURRENCY_SYMBOLS to maintain DRY principle
+// ============================================
+
+// Helper functions for categorizing symbols
+// Single char currency symbols are non-alphabetic (€, $, £, etc.)
+// Alphabetic single chars like R (ZAR) need word boundary matching
+const isSingleSymbol = (s: string): boolean =>
+  s.length === 1 && !/[a-zA-Z]/.test(s);
+const isMultiCharSymbol = (s: string): boolean => s.length > 1 && /[$₵]/.test(s);
+const isTextSymbol = (s: string): boolean =>
+  (s.length === 1 && /[a-zA-Z]/.test(s)) || // Single alphabetic chars (R for ZAR)
+  (s.length > 1 && !/[$₵]/.test(s) && !/^[A-Z]{3}$/.test(s));
+const escapeRegex = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const symbolKeys = Object.keys(CURRENCY_SYMBOLS);
+
+// Single character symbols (for regex character class) - excludes alphabetic chars
+export const SINGLE_SYMBOLS = symbolKeys.filter(isSingleSymbol).map(escapeRegex);
+
+// Multi-character symbols ending in $ or ₵ (must check before single $)
+export const MULTI_CHAR_SYMBOLS = symbolKeys
+  .filter(isMultiCharSymbol)
+  .map(escapeRegex);
+
+// Text-based symbols (need word boundary matching) - includes single alphabetic chars
+export const TEXT_SYMBOLS = symbolKeys.filter(isTextSymbol);
+
 // Number format options for thousands/decimal separators
 export const NUMBER_FORMATS = {
   "en-US": { name: "1,234.56 (US/UK)", locale: "en-US" },
