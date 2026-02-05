@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
 // Cache duration: 24 hours (backend sync interval)
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
-function normalizeSettings(settings?: Partial<Settings> | null): Settings {
+export function normalizeSettings(settings?: Partial<Settings> | null): Settings {
   const merged: Settings = {
     ...DEFAULT_SETTINGS,
     ...(settings ?? {}),
