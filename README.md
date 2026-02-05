@@ -32,7 +32,7 @@
 
 ## Features
 
-- **Automatic Price Detection** — Intelligently detects prices in 12 major currencies on any website
+- **Automatic Price Detection** — Intelligently detects prices in 30+ major currencies on any website
 - **Live Exchange Rates** — Fetches current rates from Fixer.io and Frankfurter
 - **Dynamic Content Support** — Watches for dynamically loaded content and converts new prices in real-time
 - **Highly Customizable** — Choose your target currency, number format, decimal places, and display preferences
@@ -99,34 +99,20 @@ Access the full options page by clicking the **gear icon** in the popup or right
 
 ### Detectable Currencies (Source)
 
-The extension can detect and convert **FROM** these 12 major currencies:
+The extension can detect and convert **FROM** 32 major currencies:
 
-| Code | Currency           | Symbol |
-| :--: | ------------------ | :----: |
-| EUR  | Euro               |   €    |
-| USD  | US Dollar          |   $    |
-| GBP  | British Pound      |   £    |
-| JPY  | Japanese Yen       |   ¥    |
-| CHF  | Swiss Franc        |  CHF   |
-| CAD  | Canadian Dollar    |  CA$   |
-| AUD  | Australian Dollar  |   A$   |
-| NZD  | New Zealand Dollar |  NZ$   |
-| CNY  | Chinese Yuan       |   ¥    |
-| SEK  | Swedish Krona      |   kr   |
-| NOK  | Norwegian Krone    |   kr   |
-| DKK  | Danish Krone       |   kr   |
+| Region | Currencies |
+|--------|------------|
+| **Western** | EUR, USD, GBP, JPY, CHF, CAD, AUD, NZD, CNY |
+| **Nordic** | SEK, NOK, DKK, ISK |
+| **Eastern European** | PLN, CZK, HUF, RON, UAH, TRY |
+| **Asia Pacific** | INR, KRW, SGD, HKD, THB, PHP, IDR, MYR |
+| **Americas** | BRL, MXN |
+| **Middle East & Africa** | ZAR, ILS |
 
 ### Target Currencies
 
-You can convert **TO** any of these 30 currencies:
-
-|     |     |     |     |     |     |
-| :-: | :-: | :-: | :-: | :-: | :-: |
-| AUD | BRL | CAD | CHF | CNY | CZK |
-| DKK | EUR | GBP | HKD | HUF | IDR |
-| ILS | INR | ISK | JPY | KRW | MXN |
-| MYR | NOK | NZD | PHP | PLN | RON |
-| SEK | SGD | THB | TRY | USD | ZAR |
+You can convert **TO** any of 170+ currencies provided by the exchange rate API.
 
 ## Privacy
 
