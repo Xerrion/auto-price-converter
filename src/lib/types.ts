@@ -3,6 +3,7 @@
 // Fallback currency metadata (backend provides the authoritative list)
 export const ALL_CURRENCIES = {
   AUD: { name: "Australian Dollar", symbol: "A$" },
+  BDT: { name: "Bangladeshi Taka", symbol: "৳" },
   BRL: { name: "Brazilian Real", symbol: "R$" },
   CAD: { name: "Canadian Dollar", symbol: "CA$" },
   CHF: { name: "Swiss Franc", symbol: "CHF" },
@@ -11,6 +12,8 @@ export const ALL_CURRENCIES = {
   DKK: { name: "Danish Krone", symbol: "kr" },
   EUR: { name: "Euro", symbol: "€" },
   GBP: { name: "British Pound", symbol: "£" },
+  GEL: { name: "Georgian Lari", symbol: "₾" },
+  GHS: { name: "Ghanaian Cedi", symbol: "GH₵" },
   HKD: { name: "Hong Kong Dollar", symbol: "HK$" },
   HUF: { name: "Hungarian Forint", symbol: "Ft" },
   IDR: { name: "Indonesian Rupiah", symbol: "Rp" },
@@ -19,19 +22,23 @@ export const ALL_CURRENCIES = {
   ISK: { name: "Icelandic Króna", symbol: "kr" },
   JPY: { name: "Japanese Yen", symbol: "¥" },
   KRW: { name: "South Korean Won", symbol: "₩" },
+  KZT: { name: "Kazakhstani Tenge", symbol: "₸" },
   MXN: { name: "Mexican Peso", symbol: "MX$" },
   MYR: { name: "Malaysian Ringgit", symbol: "RM" },
+  NGN: { name: "Nigerian Naira", symbol: "₦" },
   NOK: { name: "Norwegian Krone", symbol: "kr" },
   NZD: { name: "New Zealand Dollar", symbol: "NZ$" },
   PHP: { name: "Philippine Peso", symbol: "₱" },
   PLN: { name: "Polish Złoty", symbol: "zł" },
   RON: { name: "Romanian Leu", symbol: "lei" },
+  RUB: { name: "Russian Ruble", symbol: "₽" },
   SEK: { name: "Swedish Krona", symbol: "kr" },
   SGD: { name: "Singapore Dollar", symbol: "S$" },
   THB: { name: "Thai Baht", symbol: "฿" },
   TRY: { name: "Turkish Lira", symbol: "₺" },
   UAH: { name: "Ukrainian Hryvnia", symbol: "₴" },
   USD: { name: "United States Dollar", symbol: "$" },
+  VND: { name: "Vietnamese Dong", symbol: "₫" },
   ZAR: { name: "South African Rand", symbol: "R" },
 } as const;
 
@@ -62,6 +69,7 @@ export const MAJOR_CURRENCIES = [
   "RON",
   "UAH",
   "TRY",
+  "RUB",
   // Asia Pacific
   "INR",
   "KRW",
@@ -71,12 +79,18 @@ export const MAJOR_CURRENCIES = [
   "PHP",
   "IDR",
   "MYR",
+  "BDT",
+  "VND",
+  "KZT",
+  "GEL",
   // Americas
   "BRL",
   "MXN",
   // Middle East & Africa
   "ZAR",
   "ILS",
+  "NGN",
+  "GHS",
 ] as const;
 
 export type MajorCurrency = (typeof MAJOR_CURRENCIES)[number];
@@ -96,6 +110,12 @@ export const CURRENCY_SYMBOLS: Readonly<Record<string, MajorCurrency[]>> = {
   "฿": ["THB"],
   "₪": ["ILS"],
   "₱": ["PHP"],
+  "₦": ["NGN"],
+  "₫": ["VND"],
+  "₸": ["KZT"],
+  "৳": ["BDT"],
+  "₽": ["RUB"],
+  "₾": ["GEL"],
 
   // Multi-character symbols
   "CA$": ["CAD"],
@@ -105,6 +125,7 @@ export const CURRENCY_SYMBOLS: Readonly<Record<string, MajorCurrency[]>> = {
   "S$": ["SGD"],
   "HK$": ["HKD"],
   "MX$": ["MXN"],
+  "GH₵": ["GHS"],
 
   // Text-based symbols
   kr: ["SEK", "NOK", "DKK", "ISK"],
@@ -123,6 +144,36 @@ export const CURRENCY_SYMBOLS: Readonly<Record<string, MajorCurrency[]>> = {
   DKK: ["DKK"],
   ISK: ["ISK"],
 };
+
+// ============================================
+// Derived detection constants (used by currencyDetector.ts)
+// These are computed from CURRENCY_SYMBOLS to maintain DRY principle
+// ============================================
+
+// Helper functions for categorizing symbols
+// Single char currency symbols are non-alphabetic (€, $, £, etc.)
+// Alphabetic single chars like R (ZAR) need word boundary matching
+const isSingleSymbol = (s: string): boolean =>
+  s.length === 1 && !/[a-zA-Z]/.test(s);
+const isMultiCharSymbol = (s: string): boolean => s.length > 1 && /[$₵]/.test(s);
+const isTextSymbol = (s: string): boolean =>
+  (s.length === 1 && /[a-zA-Z]/.test(s)) || // Single alphabetic chars (R for ZAR)
+  (s.length > 1 && !/[$₵]/.test(s) && !/^[A-Z]{3}$/.test(s));
+const escapeRegex = (s: string): string =>
+  s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const symbolKeys = Object.keys(CURRENCY_SYMBOLS);
+
+// Single character symbols (for regex character class) - excludes alphabetic chars
+export const SINGLE_SYMBOLS = symbolKeys.filter(isSingleSymbol).map(escapeRegex);
+
+// Multi-character symbols ending in $ or ₵ (must check before single $)
+export const MULTI_CHAR_SYMBOLS = symbolKeys
+  .filter(isMultiCharSymbol)
+  .map(escapeRegex);
+
+// Text-based symbols (need word boundary matching) - includes single alphabetic chars
+export const TEXT_SYMBOLS = symbolKeys.filter(isTextSymbol);
 
 // Number format options for thousands/decimal separators
 export const NUMBER_FORMATS = {

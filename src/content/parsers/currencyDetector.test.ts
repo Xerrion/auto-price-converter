@@ -164,4 +164,48 @@ describe("detectCurrency", () => {
       expect(result?.symbol.toUpperCase()).toBe("USD");
     });
   });
+
+  describe("new currency symbols", () => {
+    it("detects ₦ (Nigerian Naira) - prefix", () => {
+      const result = detectCurrency("₦ 6,907");
+      expect(result?.symbol).toBe("₦");
+      expect(result?.position).toBe("before");
+    });
+
+    it("detects ₫ (Vietnamese Dong) - postfix", () => {
+      const result = detectCurrency("1005000 ₫");
+      expect(result?.symbol).toBe("₫");
+      expect(result?.position).toBe("after");
+    });
+
+    it("detects ₸ (Kazakhstani Tenge) - postfix", () => {
+      const result = detectCurrency("1000 ₸");
+      expect(result?.symbol).toBe("₸");
+      expect(result?.position).toBe("after");
+    });
+
+    it("detects ৳ (Bangladeshi Taka) - prefix", () => {
+      const result = detectCurrency("৳699");
+      expect(result?.symbol).toBe("৳");
+      expect(result?.position).toBe("before");
+    });
+
+    it("detects ₽ (Russian Ruble) - postfix", () => {
+      const result = detectCurrency("1000 ₽");
+      expect(result?.symbol).toBe("₽");
+      expect(result?.position).toBe("after");
+    });
+
+    it("detects ₾ (Georgian Lari) - prefix", () => {
+      const result = detectCurrency("₾100");
+      expect(result?.symbol).toBe("₾");
+      expect(result?.position).toBe("before");
+    });
+
+    it("detects GH₵ (Ghanaian Cedi) - multi-char prefix", () => {
+      const result = detectCurrency("GH₵ 47.00");
+      expect(result?.symbol).toBe("GH₵");
+      expect(result?.position).toBe("before");
+    });
+  });
 });
