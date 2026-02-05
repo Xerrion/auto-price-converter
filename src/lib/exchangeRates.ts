@@ -11,7 +11,7 @@ import { getCachedRates, setCachedRates } from "./storage";
 
 const API_BASE_URL =
   import.meta.env.VITE_RATES_API_BASE ??
-  "https://web-production-96af1.up.railway.app";
+  "https://apc-api.up.railway.app";
 
 /**
  * Fetches the latest exchange rates from the backend API
