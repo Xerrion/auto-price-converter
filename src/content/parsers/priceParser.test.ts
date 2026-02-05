@@ -108,4 +108,41 @@ describe("parsePrice", () => {
     expect(parsePrice("Model 14")).toBeNull();
     expect(parsePrice("GEL-KAYANO 14")).toBeNull();
   });
+
+  describe("new currency symbols", () => {
+    it("parses ₦ (Nigerian Naira)", () => {
+      const result = parsePrice("₦ 6,907");
+      expect(result).toEqual({ amount: 6907, currency: "NGN" });
+    });
+
+    it("parses ₫ (Vietnamese Dong) - postfix", () => {
+      const result = parsePrice("1005000 ₫");
+      expect(result).toEqual({ amount: 1005000, currency: "VND" });
+    });
+
+    it("parses ₸ (Kazakhstani Tenge) - postfix", () => {
+      const result = parsePrice("1000 ₸");
+      expect(result).toEqual({ amount: 1000, currency: "KZT" });
+    });
+
+    it("parses ৳ (Bangladeshi Taka)", () => {
+      const result = parsePrice("৳699");
+      expect(result).toEqual({ amount: 699, currency: "BDT" });
+    });
+
+    it("parses ₽ (Russian Ruble) - postfix", () => {
+      const result = parsePrice("1000 ₽");
+      expect(result).toEqual({ amount: 1000, currency: "RUB" });
+    });
+
+    it("parses ₾ (Georgian Lari)", () => {
+      const result = parsePrice("₾100");
+      expect(result).toEqual({ amount: 100, currency: "GEL" });
+    });
+
+    it("parses GH₵ (Ghanaian Cedi)", () => {
+      const result = parsePrice("GH₵ 47.00");
+      expect(result).toEqual({ amount: 47, currency: "GHS" });
+    });
+  });
 });
