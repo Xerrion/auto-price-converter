@@ -4,6 +4,7 @@
 import type { Settings, ExchangeRates } from "../lib/types";
 import type { PageContext } from "./context";
 import { buildPageContext } from "./context";
+import { isUrlExcluded } from "../lib/exclusion";
 
 import { injectStyles } from "./utils/domUtils";
 import { setupMutationObserver, disconnectMutationObserver } from "./utils/observers";
@@ -16,6 +17,7 @@ let settings: Settings | null = null;
 let exchangeRates: ExchangeRates | null = null;
 let pageContext: PageContext | null = null;
 let scanner: SmartScanner | null = null;
+let isExcluded = false;
 
 // ============================================================================
 // INITIALIZATION
@@ -49,6 +51,13 @@ async function init(): Promise<void> {
     console.log(
       `Price Converter: ${Object.keys(exchangeRates?.rates || {}).length} currencies supported`,
     );
+
+    // Check if current URL is excluded from conversion
+    if (settings && isUrlExcluded(window.location.href, settings.exclusionList)) {
+      isExcluded = true;
+      console.log("Price Converter: URL is excluded from conversion");
+      return;
+    }
 
     if (settings?.enabled && exchangeRates) {
       startConversion();
@@ -113,6 +122,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         title: document.title,
         url: window.location.href,
         domain: window.location.hostname,
+        isExcluded,
       });
       break;
 
@@ -129,10 +139,26 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 function handleSettingsUpdate(newSettings: Settings): void {
+  const previouslyExcluded = isExcluded;
   settings = newSettings;
   console.log("Price Converter: Settings updated", settings);
 
-  if (settings.enabled) {
+  // Re-check exclusion status (user may have added/removed current URL)
+  isExcluded = isUrlExcluded(window.location.href, settings.exclusionList);
+
+  if (isExcluded) {
+    // URL is now excluded - stop conversion if running
+    console.log("Price Converter: URL is now excluded");
+    stopConversion();
+    return;
+  }
+
+  if (previouslyExcluded && !isExcluded) {
+    // URL was excluded but no longer is - can start conversion
+    console.log("Price Converter: URL is no longer excluded");
+  }
+
+  if (settings.enabled && exchangeRates) {
     revertConvertedPrices();
     startConversion();
   } else {

@@ -155,6 +155,17 @@ export interface Settings {
   decimalPlaces: number;
   numberFormat: NumberFormat; // User's preferred number format
   theme: Theme; // light, dark, or system
+  exclusionList: ExclusionEntry[]; // URLs/domains excluded from conversion
+}
+
+// Exclusion list types for URL/domain blacklist feature
+export type ExclusionType = "url" | "domain" | "domain-exact";
+
+export interface ExclusionEntry {
+  id: string; // Unique ID for removal
+  pattern: string; // The URL or domain pattern
+  type: ExclusionType; // How to match: exact URL, domain with subdomains, or domain only
+  addedAt: string; // ISO timestamp when added
 }
 
 export interface ExchangeRates {
