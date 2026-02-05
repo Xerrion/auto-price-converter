@@ -1,6 +1,6 @@
 // Chrome storage utilities
 
-import type { Settings, CachedRates, CachedSymbols } from "./types";
+import type { Settings, CachedRates, CachedSymbols, ExclusionEntry } from "./types";
 import { NUMBER_FORMATS, THEMES } from "./types";
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: Settings = {
   decimalPlaces: 2,
   numberFormat: "en-US",
   theme: "system",
+  exclusionList: [],
 };
 
 // Cache duration: 24 hours (backend sync interval)
@@ -48,6 +49,23 @@ function normalizeSettings(settings?: Partial<Settings> | null): Settings {
   }
   if (!THEMES[merged.theme]) {
     merged.theme = DEFAULT_SETTINGS.theme;
+  }
+
+  // Validate exclusionList - ensure it's an array of valid entries
+  if (!Array.isArray(merged.exclusionList)) {
+    merged.exclusionList = DEFAULT_SETTINGS.exclusionList;
+  } else {
+    // Filter out invalid entries
+    merged.exclusionList = merged.exclusionList.filter(
+      (entry): entry is ExclusionEntry =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof entry.id === "string" &&
+        typeof entry.pattern === "string" &&
+        entry.pattern.length > 0 &&
+        ["url", "domain", "domain-exact"].includes(entry.type) &&
+        typeof entry.addedAt === "string",
+    );
   }
 
   return merged;
