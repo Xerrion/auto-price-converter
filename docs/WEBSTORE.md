@@ -23,6 +23,7 @@ Browse any website and see prices automatically converted to your local currency
 The extension recognizes prices written in multiple formats:
 
 **Currency Symbols**
+
 - Single characters: $ € £ ¥ ₹ ₩ ₪ ₱ ₦ ₫ ₴ ₺ ฿ ₸ ৳ ₽ ₾
 - Multi-character: CA$ A$ NZ$ R$ S$ HK$ MX$ GH₵
 - Text symbols: kr zł Kč Ft lei Rp RM CHF
