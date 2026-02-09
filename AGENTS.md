@@ -63,35 +63,52 @@ bun run generate-icons   # Generate extension icons from source
 
 ### Versioning & Releases
 
-This project uses **Changesets** for version management and changelog generation.
+This project uses **Release Please** for automated version management and changelog generation.
 
-#### Release Workflow
+#### How It Works
 
-1. **Create a changeset** - Describe your changes:
-   ```bash
-   bun run changeset
-   ```
-   This creates a file in `.changeset/` describing the change and version bump type (patch/minor/major).
+1. **Make changes** using [Conventional Commits](https://www.conventionalcommits.org/):
+   - `feat: add new feature` → Minor version bump
+   - `fix: resolve bug` → Patch version bump
+   - `feat!: breaking change` or `BREAKING CHANGE:` → Major version bump
 
-2. **Bump version** - When ready to release:
-   ```bash
-   bun run version
-   ```
-   This consumes changesets, updates `package.json`, `manifest.config.ts`, and appends to `CHANGELOG.md`.
+2. **Merge to main** → Release Please automatically creates/updates a Release PR with:
+   - Version bump in `package.json` and `manifest.config.ts`
+   - Updated `CHANGELOG.md`
 
-3. **Commit & push** - Commit the version bump.
+3. **Merge the Release PR** → Automatically:
+   - Creates a GitHub Release
+   - Creates a git tag
+   - Builds and attaches the extension ZIP
 
-4. **Create a tag** - Triggers the release workflow:
-   ```bash
-   git tag v<version>
-   git push origin v<version>
-   ```
+#### Commit Message Format
 
-#### Notes
+```
+<type>[optional scope]: <description>
 
-- The `tag-release.yml` workflow automatically creates tags when `package.json` version changes on main
-- `GITHUB_TOKEN` environment variable is required for `bun run version` to generate GitHub-linked changelogs
-- Changelog entries are extracted from `CHANGELOG.md` and used in GitHub Release notes
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+- `feat` - New feature (minor bump)
+- `fix` - Bug fix (patch bump)
+- `perf` - Performance improvement
+- `refactor` - Code change that neither fixes a bug nor adds a feature
+- `docs` - Documentation only
+- `chore` - Maintenance tasks
+- `test` - Adding or updating tests
+- `ci` - CI/CD changes
+
+#### Configuration Files
+
+- `release-please-config.json` - Release Please configuration
+- `.release-please-manifest.json` - Tracks current version
+
+#### Required Secret
+
+- `RELEASE_TOKEN` - A GitHub PAT with `contents: write` permission (Fine-grained PAT)
 
 ## Project Structure
 
