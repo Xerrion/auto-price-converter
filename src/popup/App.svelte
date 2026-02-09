@@ -156,7 +156,10 @@
 <main class="w-[300px] p-4 bg-background">
   <Card.Root>
     <Card.Header class="pb-3">
-      <Card.Title class="text-center text-lg">💱 Price Converter</Card.Title>
+      <Card.Title class="flex items-center justify-center gap-2 text-lg">
+        <img src="../icons/icon32.png" alt="" width="24" height="24" />
+        Auto Price Converter
+      </Card.Title>
     </Card.Header>
 
     <Separator />
