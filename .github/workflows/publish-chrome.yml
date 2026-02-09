@@ -23,7 +23,10 @@ jobs:
 
       - name: Extract version
         id: version
-        run: echo "VERSION=${RELEASE_TAG#v}" >> $GITHUB_OUTPUT
+        run: |
+          # Tag format: auto-price-converter-v2.3.0 -> extract 2.3.0
+          VERSION=$(echo "$RELEASE_TAG" | sed 's/.*-v//')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         env:
           RELEASE_TAG: ${{ steps.release.outputs.release }}
 
