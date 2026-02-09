@@ -309,6 +309,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 ```
 
+## Deployment Notes
+
+- **Chrome Web Store**: Published at [Chrome Web Store](https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg)
+- **Web Store Listing**: See `docs/WEBSTORE.md` for listing content
+- **Build Artifact**: `extension-{version}.zip` attached to GitHub releases
+
+## Common Issues
+
+### Type Errors with ALL_CURRENCIES
+
+The `ALL_CURRENCIES` object is readonly. When indexing it, ensure proper type guards:
+
+```typescript
+// ❌ Problematic
+const currencyInfo = ALL_CURRENCIES[currency];
+
+// ✅ Better with type guard
+const currencyInfo = ALL_CURRENCIES[currency as keyof typeof ALL_CURRENCIES];
+```
+
 ## Git Conventions
 
 ### Workflow
@@ -369,17 +389,3 @@ feat!: redesign settings page  # Breaking change
 - **Keep PRs narrow and well-scoped**
 - Run `bun run check` before submitting
 - Never commit `.env` files or secrets
-
-## Common Issues
-
-### Type Errors with ALL_CURRENCIES
-
-The `ALL_CURRENCIES` object is readonly. When indexing it, ensure proper type guards:
-
-```typescript
-// ❌ Problematic
-const currencyInfo = ALL_CURRENCIES[currency];
-
-// ✅ Better with type guard
-const currencyInfo = ALL_CURRENCIES[currency as keyof typeof ALL_CURRENCIES];
-```
