@@ -309,38 +309,66 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 ```
 
-## Git Workflow
+## Git Conventions
+
+### Workflow
 
 This project uses a **feature branch** workflow:
 
-1. **Create a feature branch** from `main`:
-   ```bash
-   git checkout -b feature/my-feature
-   ```
+1. **Always work on feature branches** — never commit directly to `main`
+2. **Always create PRs** for code review before merging
+3. **Keep commits atomic** — each commit should touch as few files as possible
 
-2. **Make changes** and commit with descriptive messages
+### Branch Naming
 
-3. **Push the branch** and create a Pull Request:
-   ```bash
-   git push -u origin feature/my-feature
-   ```
+Use prefixes that match your commit type:
 
-4. **After PR approval**, merge to `main`
-
-### Branch Naming Conventions
-
-- `feature/` - New features (e.g., `feature/dark-mode`)
+- `feat/` - New features (e.g., `feat/dark-mode`)
 - `fix/` - Bug fixes (e.g., `fix/price-parsing`)
 - `docs/` - Documentation changes
 - `refactor/` - Code refactoring
 - `chore/` - Maintenance tasks
 
-## Pull Requests
+### Commit Messages
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) format (required for Release Please):
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+- `feat` - New feature (triggers minor version bump)
+- `fix` - Bug fix (triggers patch version bump)
+- `perf` - Performance improvement
+- `refactor` - Code change that neither fixes a bug nor adds a feature
+- `docs` - Documentation only
+- `chore` - Maintenance tasks
+- `test` - Adding or updating tests
+- `ci` - CI/CD changes
+
+**Examples:**
+
+```bash
+feat: add dark mode toggle
+fix: correct price parsing for Swiss format
+docs: update README with new features
+chore: update dependencies
+feat!: redesign settings page  # Breaking change
+```
+
+### Pull Requests
 
 - **Update documentation** when behavior changes
 - **Add or update tests** when it makes sense
 - **Keep PRs narrow and well-scoped**
 - Run `bun run check` before submitting
+- Never commit `.env` files or secrets
 
 ## Common Issues
 
