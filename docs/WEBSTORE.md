@@ -12,13 +12,13 @@ Automatically converts prices on any website to your local currency using live e
 
 ## Detailed Description (Plain Text for Chrome Web Store)
 
-Stop doing currency math in your head. Auto Price Converter automatically detects and converts prices on any website to your chosen currency — instantly and accurately.
+🧮 Stop doing currency math in your head. Auto Price Converter automatically detects and converts prices on any website to your chosen currency — instantly and accurately.
 
-WHAT IT DOES
+🌐 WHAT IT DOES
 
 Browse any website and see prices automatically converted to your local currency. Shopping on international sites? Comparing prices across regions? Auto Price Converter handles the conversion so you don't have to.
 
-INTELLIGENT PRICE DETECTION
+🔍 INTELLIGENT PRICE DETECTION
 
 The extension recognizes prices written in multiple formats:
 
@@ -30,11 +30,11 @@ Currency Symbols:
 ISO Currency Codes:
 DKK, NOK, SEK, EUR, USD, GBP, JPY, CHF, CAD, AUD, NZD, CNY, PLN, CZK, HUF, RON, UAH, TRY, INR, KRW, SGD, HKD, THB, PHP, IDR, MYR, BRL, MXN, ZAR, ILS, ISK, and more.
 
-170+ TARGET CURRENCIES
+💱 170+ TARGET CURRENCIES
 
 Convert to virtually any world currency. Whether you need Danish Kroner, Japanese Yen, or Bitcoin — we've got you covered with live exchange rates.
 
-KEY FEATURES
+⭐ KEY FEATURES
 
 • Automatic Detection — Prices are converted as you browse, no clicking required
 • Live Exchange Rates — Updated daily from reliable financial data providers
@@ -44,21 +44,21 @@ KEY FEATURES
 • Site Exclusions — Disable on specific websites where you don't want conversion
 • Dark Mode — Full dark mode support for comfortable browsing
 
-PRIVACY FIRST
+🔒 PRIVACY FIRST
 
 • All settings stored locally in your browser
 • Only contacts our exchange rate API for currency data
 • No tracking, no analytics, no personal data collection
 • Open source: https://github.com/xerrion/auto-price-converter
 
-PERFECT FOR
+👤 PERFECT FOR
 
 • International online shoppers
 • Travelers researching prices abroad
 • Business professionals comparing global prices
 • Anyone tired of manual currency conversion
 
-Questions or feedback? Visit our GitHub repository or leave a review!
+💬 Questions or feedback? Visit our GitHub repository or leave a review!
 
 ## Category
 
