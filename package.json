@@ -10,15 +10,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "generate-icons": "bun run scripts/generate-icons.ts",
-    "changeset": "changeset",
-    "sync:manifest": "bun run scripts/sync-manifest-version.ts",
-    "version": "changeset version && bun run sync:manifest",
-    "release": "changeset publish"
+    "generate-icons": "bun run scripts/generate-icons.ts"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.8",
     "@crxjs/vite-plugin": "^2.0.0-beta.33",
     "@internationalized/date": "^3.10.0",
     "@lucide/svelte": "^0.563.1",
