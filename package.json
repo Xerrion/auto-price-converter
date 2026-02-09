@@ -1,6 +1,6 @@
 {
   "name": "auto-price-converter",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "A browser extension that automatically converts prices on websites to your chosen currency",
   "type": "module",
   "scripts": {

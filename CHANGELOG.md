@@ -1,5 +1,22 @@
 # auto-price-converter
 
+## [3.0.0](https://github.com/Xerrion/auto-price-converter/compare/auto-price-converter-v2.3.0...auto-price-converter-v3.0.0) (2026-02-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Migrate from @crxjs/vite-plugin to WXT framework
+
+### Features
+
+* migrate to WXT for Chrome and Firefox support ([#37](https://github.com/Xerrion/auto-price-converter/issues/37)) ([f0f9497](https://github.com/Xerrion/auto-price-converter/commit/f0f9497c4b8161d9684699db90efb2379d3fb03c))
+
+
+### Bug Fixes
+
+* convert webstore description to plain text format ([#34](https://github.com/Xerrion/auto-price-converter/issues/34)) ([4f0cb24](https://github.com/Xerrion/auto-price-converter/commit/4f0cb245bbccfe80525287697a6323ae0e156af9))
+* correct version extraction for release-please tag format ([#36](https://github.com/Xerrion/auto-price-converter/issues/36)) ([c32f0a1](https://github.com/Xerrion/auto-price-converter/commit/c32f0a15de4be4182b3f44380906f8e9d30d728a))
+
 ## [2.3.0](https://github.com/Xerrion/auto-price-converter/compare/auto-price-converter-v2.2.0...auto-price-converter-v2.3.0) (2026-02-09)
 
 
