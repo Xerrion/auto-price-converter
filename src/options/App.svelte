@@ -99,7 +99,8 @@
 
 <main class="min-h-screen bg-background p-8">
   <div class="max-w-2xl mx-auto space-y-6">
-    <div class="text-center mb-8">
+    <div class="text-center mb-8 flex items-center justify-center gap-3">
+      <img src="../icons/icon48.png" alt="Auto Price Converter" width="48" height="48" />
       <h1 class="text-2xl font-bold">Auto Price Converter Options</h1>
     </div>
 
