@@ -1,6 +1,6 @@
 {
   "name": "auto-price-converter",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "A Chrome extension template using Svelte and TypeScript",
   "type": "module",
   "scripts": {
