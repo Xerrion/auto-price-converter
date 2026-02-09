@@ -20,7 +20,7 @@ export default defineManifest({
       "48": "src/icons/icon48.png",
       "128": "src/icons/icon128.png",
     },
-    default_title: "Price Converter",
+    default_title: "Auto Price Converter",
   },
   options_page: "src/options/index.html",
   background: {
@@ -35,8 +35,5 @@ export default defineManifest({
     },
   ],
   permissions: ["storage", "activeTab"],
-  host_permissions: [
-    "http://localhost:8000/*",
-    "https://api.your-backend.example/*",
-  ],
+  host_permissions: ["https://apc-api.up.railway.app/*"],
 });

@@ -7,11 +7,14 @@ import { buildPageContext } from "./context";
 import { isUrlExcluded } from "../lib/exclusion";
 
 import { injectStyles } from "./utils/domUtils";
-import { setupMutationObserver, disconnectMutationObserver } from "./utils/observers";
+import {
+  setupMutationObserver,
+  disconnectMutationObserver,
+} from "./utils/observers";
 import { revertConvertedPrices } from "./utils/revert";
 import { SmartScanner } from "./scanner";
 
-console.log("Price Converter: Content script loaded");
+console.log("Auto Price Converter: Content script loaded");
 
 let settings: Settings | null = null;
 let exchangeRates: ExchangeRates | null = null;
@@ -27,12 +30,12 @@ let isExcluded = false;
  * Initialize the content script
  */
 async function init(): Promise<void> {
-  console.log("Price Converter: Initializing on", window.location.href);
+  console.log("Auto Price Converter: Initializing on", window.location.href);
 
   try {
     // Build page context first (for currency detection and locale)
     pageContext = await buildPageContext();
-    console.log("Price Converter: Page context", {
+    console.log("Auto Price Converter: Page context", {
       locale: pageContext.locale,
       currency: pageContext.currency,
       currencySource: pageContext.currencySource,
@@ -46,16 +49,21 @@ async function init(): Promise<void> {
     settings = settingsResponse?.settings;
     exchangeRates = ratesResponse?.rates;
 
-    console.log("Price Converter: Settings loaded", settings);
-    console.log("Price Converter: Rates loaded", exchangeRates?.date);
+    console.log("Auto Price Converter: Settings loaded", settings);
+    console.log("Auto Price Converter: Rates loaded", exchangeRates?.date);
     console.log(
-      `Price Converter: ${Object.keys(exchangeRates?.rates || {}).length} currencies supported`,
+      `Auto Price Converter: ${
+        Object.keys(exchangeRates?.rates || {}).length
+      } currencies supported`,
     );
 
     // Check if current URL is excluded from conversion
-    if (settings && isUrlExcluded(window.location.href, settings.exclusionList)) {
+    if (
+      settings &&
+      isUrlExcluded(window.location.href, settings.exclusionList)
+    ) {
       isExcluded = true;
-      console.log("Price Converter: URL is excluded from conversion");
+      console.log("Auto Price Converter: URL is excluded from conversion");
       return;
     }
 
@@ -63,7 +71,7 @@ async function init(): Promise<void> {
       startConversion();
     }
   } catch (error) {
-    console.error("Price Converter: Failed to initialize", error);
+    console.error("Auto Price Converter: Failed to initialize", error);
   }
 }
 
