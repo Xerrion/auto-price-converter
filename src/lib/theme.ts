@@ -61,13 +61,12 @@ export function watchSystemTheme(
  */
 export async function initializeTheme(): Promise<void> {
   try {
-    const response = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" });
+    const response = await browser.runtime.sendMessage({ type: "GET_SETTINGS" });
     if (response.settings?.theme) {
       applyTheme(response.settings.theme);
       watchSystemTheme(response.settings.theme);
     }
   } catch {
-    // Default to system theme if settings can't be loaded
     applyTheme("system");
     watchSystemTheme("system");
   }

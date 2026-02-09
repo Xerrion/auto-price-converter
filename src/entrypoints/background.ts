@@ -1,40 +1,82 @@
-// Background service worker for Chrome extension
-import type { ExchangeRates, Settings } from "../lib/types";
-import { getExchangeRates } from "../lib/exchangeRates";
-import { getSymbols } from "../lib/symbols";
+import type { ExchangeRates, Settings } from "$lib/types";
+import { getExchangeRates } from "$lib/exchangeRates";
+import { getSymbols, refreshSymbols } from "$lib/symbols";
 import {
   getSettings,
   saveSettings,
   getCachedRates,
   DEFAULT_SETTINGS,
-} from "../lib/storage";
+} from "$lib/storage";
 
-// Store rates in memory for quick access
 let cachedRates: ExchangeRates | null = null;
 let cachedSymbols: Record<string, string> | null = null;
 
-// Listen for extension installation
-chrome.runtime.onInstalled.addListener(async (details) => {
-  console.log("Extension installed:", details.reason);
+export default defineBackground(() => {
+  browser.runtime.onInstalled.addListener(async (details) => {
+    console.log("Extension installed:", details.reason);
 
-  // Initialize default settings on first install
-  if (details.reason === "install") {
-    await saveSettings(DEFAULT_SETTINGS);
-  }
+    if (details.reason === "install") {
+      await saveSettings(DEFAULT_SETTINGS);
+    }
 
-  // Fetch exchange rates on install/update
-  await initializeRates();
-  await initializeSymbols();
+    await initializeRates();
+    await initializeSymbols();
+  });
+
+  browser.runtime.onStartup.addListener(async () => {
+    console.log("Extension started");
+    await initializeRates();
+    await initializeSymbols();
+  });
+
+  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("Message received:", message.type, "from:", sender.tab?.url);
+
+    switch (message.type) {
+      case "GET_RATES":
+        handleGetRates(sendResponse);
+        return true;
+
+      case "GET_SETTINGS":
+        handleGetSettings(sendResponse);
+        return true;
+
+      case "GET_SYMBOLS":
+        handleGetSymbols(sendResponse);
+        return true;
+
+      case "SAVE_SETTINGS":
+        handleSaveSettings(message.payload as Settings, sendResponse);
+        return true;
+
+      case "REFRESH_RATES":
+        handleRefreshRates(sendResponse);
+        return true;
+
+      case "GET_TAB_INFO":
+        if (sender.tab) {
+          sendResponse({ tabId: sender.tab.id, url: sender.tab.url });
+        }
+        break;
+
+      case "PING":
+        sendResponse({ status: "pong" });
+        break;
+
+      default:
+        sendResponse({ error: "Unknown message type" });
+    }
+
+    return true;
+  });
+
+  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === "complete" && tab.url) {
+      console.log("Tab updated:", tabId, tab.url);
+    }
+  });
 });
 
-// Fetch rates on startup
-chrome.runtime.onStartup.addListener(async () => {
-  console.log("Extension started");
-  await initializeRates();
-  await initializeSymbols();
-});
-
-// Initialize exchange rates
 async function initializeRates(): Promise<void> {
   try {
     cachedRates = await getExchangeRates();
@@ -56,61 +98,16 @@ async function initializeSymbols(): Promise<void> {
   }
 }
 
-// Listen for messages from content scripts or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Message received:", message.type, "from:", sender.tab?.url);
-
-  // Handle different message types
-  switch (message.type) {
-    case "GET_RATES":
-      handleGetRates(sendResponse);
-      return true;
-
-    case "GET_SETTINGS":
-      handleGetSettings(sendResponse);
-      return true;
-
-    case "GET_SYMBOLS":
-      handleGetSymbols(sendResponse);
-      return true;
-
-    case "SAVE_SETTINGS":
-      handleSaveSettings(message.payload as Settings, sendResponse);
-      return true;
-
-    case "REFRESH_RATES":
-      handleRefreshRates(sendResponse);
-      return true;
-
-    case "GET_TAB_INFO":
-      if (sender.tab) {
-        sendResponse({ tabId: sender.tab.id, url: sender.tab.url });
-      }
-      break;
-
-    case "PING":
-      sendResponse({ status: "pong" });
-      break;
-
-    default:
-      sendResponse({ error: "Unknown message type" });
-  }
-
-  return true;
-});
-
 async function handleGetRates(
   sendResponse: (response: unknown) => void,
 ): Promise<void> {
   try {
-    // If no in-memory cache, try to load from storage first (no network fetch)
     if (!cachedRates) {
       const stored = await getCachedRates();
       if (stored) {
         cachedRates = stored.rates;
         console.log("Loaded rates from storage cache:", cachedRates.date);
       } else {
-        // Only fetch from network if nothing in storage
         cachedRates = await getExchangeRates();
       }
     }
@@ -137,7 +134,7 @@ async function handleGetSymbols(
   sendResponse: (response: unknown) => void,
 ): Promise<void> {
   try {
-    if (!cachedSymbols) {
+    if (!cachedSymbols || Object.keys(cachedSymbols).length === 0) {
       cachedSymbols = await getSymbols();
     }
     sendResponse({ symbols: cachedSymbols });
@@ -155,11 +152,10 @@ async function handleSaveSettings(
     await saveSettings(settings);
     sendResponse({ success: true });
 
-    // Notify all tabs with content scripts about settings change (http/https only)
-    const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+    const tabs = await browser.tabs.query({ url: ["http://*/*", "https://*/*"] });
     for (const tab of tabs) {
       if (tab.id) {
-        chrome.tabs
+        browser.tabs
           .sendMessage(tab.id, {
             type: "SETTINGS_UPDATED",
             payload: settings,
@@ -180,19 +176,18 @@ async function handleRefreshRates(
 ): Promise<void> {
   try {
     cachedRates = await getExchangeRates();
-    sendResponse({ rates: cachedRates });
+    cachedSymbols = await refreshSymbols();
+    sendResponse({ rates: cachedRates, symbols: cachedSymbols });
 
-    // Notify all tabs with content scripts about new rates (http/https only)
-    const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+    const tabs = await browser.tabs.query({ url: ["http://*/*", "https://*/*"] });
     for (const tab of tabs) {
       if (tab.id) {
-        chrome.tabs
+        browser.tabs
           .sendMessage(tab.id, {
             type: "RATES_UPDATED",
             payload: cachedRates,
           })
           .catch(() => {
-            // Ignore errors for tabs that don't have content script
           });
       }
     }
@@ -201,12 +196,3 @@ async function handleRefreshRates(
     sendResponse({ error: "Failed to refresh exchange rates" });
   }
 }
-
-// Listen for tab updates to trigger conversion on navigation
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && tab.url) {
-    console.log("Tab updated:", tabId, tab.url);
-  }
-});
-
-export {};

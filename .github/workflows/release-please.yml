@@ -44,20 +44,32 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build extension
+      - name: Build Chrome extension
         run: bun run build
         env:
           VITE_RATES_API_BASE: ${{ secrets.VITE_RATES_API_BASE }}
 
-      - name: Create ZIP archive
-        run: |
-          cd dist
-          zip -r ../extension-${{ needs.release-please.outputs.version }}.zip .
+      - name: Build Firefox extension
+        run: bun run build:firefox
+        env:
+          VITE_RATES_API_BASE: ${{ secrets.VITE_RATES_API_BASE }}
 
-      - name: Upload release artifact
+      - name: Create Chrome ZIP archive
+        run: |
+          cd .output/chrome-mv3
+          zip -r ../../extension-chrome-${{ needs.release-please.outputs.version }}.zip .
+
+      - name: Create Firefox ZIP archive
+        run: |
+          cd .output/firefox-mv3
+          zip -r ../../extension-firefox-${{ needs.release-please.outputs.version }}.zip .
+
+      - name: Upload release artifacts
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: extension-${{ needs.release-please.outputs.version }}.zip
+          files: |
+            extension-chrome-${{ needs.release-please.outputs.version }}.zip
+            extension-firefox-${{ needs.release-please.outputs.version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

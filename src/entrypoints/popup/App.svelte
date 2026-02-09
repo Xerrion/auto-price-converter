@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { Settings, ExchangeRates, ExclusionType } from "../lib/types";
+  import type { Settings, ExchangeRates, ExclusionType } from "$lib/types";
   import {
     createExclusionEntry,
     extractDomain,
     extractUrlWithoutHash,
     isUrlExcluded,
-  } from "../lib/exclusion";
+  } from "$lib/exclusion";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
@@ -35,8 +35,8 @@
   async function loadData() {
     try {
       const [settingsResponse, ratesResponse] = await Promise.all([
-        chrome.runtime.sendMessage({ type: "GET_SETTINGS" }),
-        chrome.runtime.sendMessage({ type: "GET_RATES" }),
+        browser.runtime.sendMessage({ type: "GET_SETTINGS" }),
+        browser.runtime.sendMessage({ type: "GET_RATES" }),
       ]);
 
       settings = settingsResponse.settings;
@@ -55,12 +55,12 @@
 
   async function loadPageInfo() {
     try {
-      const [tab] = await chrome.tabs.query({
+      const [tab] = await browser.tabs.query({
         active: true,
         currentWindow: true,
       });
       if (tab?.id && tab.url && !tab.url.startsWith("chrome://")) {
-        const response = await chrome.tabs.sendMessage(tab.id, {
+        const response = await browser.tabs.sendMessage(tab.id, {
           type: "GET_PAGE_INFO",
         });
         pageInfo = response;
@@ -82,7 +82,7 @@
     if (!settings) return;
 
     try {
-      await chrome.runtime.sendMessage({
+      await browser.runtime.sendMessage({
         type: "SAVE_SETTINGS",
         payload: settings,
       });
@@ -142,7 +142,7 @@
   }
 
   function openOptions() {
-    chrome.runtime.openOptionsPage();
+    browser.runtime.openOptionsPage();
   }
 
   function formatFetchedAt(fetchedAt?: string) {
@@ -157,7 +157,7 @@
   <Card.Root>
     <Card.Header class="pb-3">
       <Card.Title class="flex items-center justify-center gap-2 text-lg">
-        <img src="../icons/icon32.png" alt="" width="24" height="24" />
+        <img src="/icons/icon32.png" alt="" width="24" height="24" />
         Auto Price Converter
       </Card.Title>
     </Card.Header>

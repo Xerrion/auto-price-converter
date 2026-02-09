@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Settings, ExchangeRates, Theme } from "../lib/types";
-  import { applyTheme, watchSystemTheme } from "../lib/theme";
+  import type { Settings, ExchangeRates, Theme } from "$lib/types";
+  import { applyTheme, watchSystemTheme } from "$lib/theme";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { toast } from "svelte-sonner";
@@ -38,9 +38,9 @@
     try {
       const [settingsResponse, ratesResponse, symbolsResponse] =
         await Promise.all([
-          chrome.runtime.sendMessage({ type: "GET_SETTINGS" }),
-          chrome.runtime.sendMessage({ type: "GET_RATES" }),
-          chrome.runtime.sendMessage({ type: "GET_SYMBOLS" }),
+          browser.runtime.sendMessage({ type: "GET_SETTINGS" }),
+          browser.runtime.sendMessage({ type: "GET_RATES" }),
+          browser.runtime.sendMessage({ type: "GET_SYMBOLS" }),
         ]);
 
       if (settingsResponse.settings) {
@@ -62,7 +62,7 @@
 
   async function saveSettings() {
     try {
-      await chrome.runtime.sendMessage({
+      await browser.runtime.sendMessage({
         type: "SAVE_SETTINGS",
         payload: settings,
       });
@@ -75,11 +75,14 @@
 
   async function refreshRates() {
     try {
-      const response = await chrome.runtime.sendMessage({
+      const response = await browser.runtime.sendMessage({
         type: "REFRESH_RATES",
       });
       if (response.rates) {
         rates = response.rates;
+        if (response.symbols) {
+          symbols = response.symbols;
+        }
         toast.success("Exchange rates updated");
       } else {
         toast.error("Failed to refresh exchange rates");
@@ -100,7 +103,7 @@
 <main class="min-h-screen bg-background p-8">
   <div class="max-w-2xl mx-auto space-y-6">
     <div class="text-center mb-8 flex items-center justify-center gap-3">
-      <img src="../icons/icon48.png" alt="Auto Price Converter" width="48" height="48" />
+      <img src="/icons/icon48.png" alt="Auto Price Converter" width="48" height="48" />
       <h1 class="text-2xl font-bold">Auto Price Converter Options</h1>
     </div>
 

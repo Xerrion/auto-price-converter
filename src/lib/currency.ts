@@ -42,7 +42,7 @@ export function getCurrencySymbol(code: CurrencyCode): string {
 export function getCurrencyList(
   symbols?: Record<string, string> | null,
 ): string[] {
-  if (symbols) {
+  if (symbols && Object.keys(symbols).length > 0) {
     return Object.keys(symbols).sort();
   }
   return CURRENCY_CODES;

@@ -1,11 +1,11 @@
 # Auto Price Converter
 
 <p align="center">
-  <img src="src/icons/icon128.png" alt="Auto Price Converter Logo" width="128" height="128">
+  <img src="src/assets/icon128.png" alt="Auto Price Converter Logo" width="128" height="128">
 </p>
 
 <p align="center">
-  A Chrome extension that <strong>automatically converts prices on websites</strong> to your chosen local currency using live exchange rates.
+  A browser extension that <strong>automatically converts prices on websites</strong> to your chosen local currency using live exchange rates.
 </p>
 
 <p align="center">
@@ -14,6 +14,9 @@
   </a>
   <a href="https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg">
     <img src="https://img.shields.io/chrome-web-store/users/njogpdjiklbgihogkdonlnhlonfhapjg" alt="Chrome Web Store Users">
+  </a>
+  <a href="https://addons.mozilla.org/firefox/addon/auto-price-converter/">
+    <img src="https://img.shields.io/amo/v/auto-price-converter?label=Firefox%20Add-ons" alt="Firefox Add-ons Version">
   </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/github/license/xerrion/auto-price-converter" alt="License">
@@ -41,16 +44,22 @@
 
 ## Installation
 
-### From Chrome Web Store
+### From Browser Stores
 
 <p align="center">
   <a href="https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg">
-    <img src="https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png" alt="Available in the Chrome Web Store" width="248">
+    <img src="https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png" alt="Available in the Chrome Web Store" width="206">
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://addons.mozilla.org/firefox/addon/auto-price-converter/">
+    <img src="https://extensionworkshop.com/assets/img/documentation/publish/get-the-addon-178x60px.dad84b42.png" alt="Get the Add-on for Firefox" width="172">
   </a>
 </p>
 
 <details>
 <summary>Manual Installation (Developer Mode)</summary>
+
+#### Chrome
 
 1. Download or clone this repository
 2. Install dependencies and build:
@@ -61,7 +70,19 @@
 3. Open Chrome and navigate to `chrome://extensions/`
 4. Enable **Developer mode** (toggle in the top right)
 5. Click **Load unpacked**
-6. Select the `dist` folder from this project
+6. Select the `dist/chrome-mv3` folder from this project
+
+#### Firefox
+
+1. Download or clone this repository
+2. Install dependencies and build:
+   ```bash
+   bun install
+   bun run build:firefox
+   ```
+3. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
+4. Click **Load Temporary Add-on**
+5. Select any file in the `dist/firefox-mv3` folder
 
 </details>
 
@@ -119,7 +140,7 @@ You can convert **TO** any of 170+ currencies provided by the exchange rate API.
 This extension respects your privacy:
 
 - Only reads page content to detect prices
-- Stores settings locally in Chrome storage
+- Stores settings locally in browser storage
 - Only contacts exchange rate services for current rates
 - Does **NOT** collect or transmit any personal data
 - Does **NOT** track your browsing history
@@ -146,17 +167,18 @@ If you find this extension useful, consider supporting its development:
 
 ### Tech Stack
 
+- [WXT](https://wxt.dev/) — Next-gen web extension framework
 - [Vite](https://vitejs.dev/) — Fast development and optimized builds
 - [Svelte 5](https://svelte.dev/) — Reactive UI with runes
 - [TypeScript](https://www.typescriptlang.org/) — Full type safety
 - [Tailwind CSS v4](https://tailwindcss.com/) — Utility-first styling
 - [shadcn-svelte](https://shadcn-svelte.com/) — Beautiful, accessible components
-- Chrome Manifest V3 — Modern extension APIs
+- Manifest V3 — Modern extension APIs for Chrome and Firefox
 
 ### Prerequisites
 
 - [Bun](https://bun.sh/) (recommended) or Node.js 18+
-- Chrome browser
+- Chrome or Firefox browser
 
 ### Setup
 
@@ -174,14 +196,19 @@ bun run dev
 
 ### Available Scripts
 
-| Command                  | Description                              |
-| ------------------------ | ---------------------------------------- |
-| `bun run dev`            | Start development server with hot reload |
-| `bun run build`          | Build for production                     |
-| `bun run check`          | Run Svelte type checker                  |
-| `bun run test`           | Run tests with Vitest                    |
-| `bun run test:run`       | Run tests once                           |
-| `bun run generate-icons` | Generate icon sizes from source          |
+| Command                  | Description                                 |
+| ------------------------ | ------------------------------------------- |
+| `bun run dev`            | Start Chrome dev server with hot reload     |
+| `bun run dev:firefox`    | Start Firefox dev server with hot reload    |
+| `bun run build`          | Build Chrome extension for production       |
+| `bun run build:firefox`  | Build Firefox extension for production      |
+| `bun run zip`            | Create Chrome extension ZIP                 |
+| `bun run zip:firefox`    | Create Firefox extension ZIP                |
+| `bun run zip:all`        | Create ZIPs for both browsers               |
+| `bun run check`          | Run Svelte type checker                     |
+| `bun run test`           | Run tests with Vitest                       |
+| `bun run test:run`       | Run tests once                              |
+| `bun run generate-icons` | Generate icon sizes from source             |
 
 ### Testing
 
@@ -196,10 +223,19 @@ bun run test:run
 ### Building for Production
 
 ```bash
+# Build for Chrome
 bun run build
+
+# Build for Firefox
+bun run build:firefox
+
+# Build and create ZIPs for both browsers
+bun run zip:all
 ```
 
-The built extension will be in the `dist` folder.
+The built extensions will be in:
+- Chrome: `dist/chrome-mv3/`
+- Firefox: `dist/firefox-mv3/`
 
 ### Contributing
 

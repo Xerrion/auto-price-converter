@@ -2,8 +2,8 @@
 
 ## Project overview
 
-- Browser extension built with Svelte 5 + TypeScript
-- Bundled with Vite and `@crxjs/vite-plugin`
+- Browser extension (Chrome & Firefox) built with Svelte 5 + TypeScript
+- Bundled with WXT (Web Extension Tools)
 - Uses Bun for scripts in this repo
 
 ## Code style
