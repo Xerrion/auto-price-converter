@@ -16,7 +16,10 @@ import { replacePrices, isConverted, isInsideConverted } from "./replacer";
 const requestIdleCallback =
   window.requestIdleCallback ||
   ((cb: IdleRequestCallback) =>
-    window.setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 1));
+    window.setTimeout(
+      () => cb({ didTimeout: false, timeRemaining: () => 50 }),
+      1,
+    ));
 
 const cancelIdleCallback =
   window.cancelIdleCallback || ((id: number) => window.clearTimeout(id));
@@ -55,7 +58,7 @@ export class SmartScanner {
     this.patterns = buildPatterns(options.exchangeRates);
 
     console.log(
-      `Price Converter: Scanner initialized with ${this.patterns.isoCodes.size} currencies`,
+      `Auto Price Converter: Scanner initialized with ${this.patterns.isoCodes.size} currencies`,
     );
   }
 
@@ -94,7 +97,7 @@ export class SmartScanner {
     try {
       elements = container.querySelectorAll(LIKELY_PRICE_SELECTORS);
     } catch (e) {
-      console.error("Price Converter: Selector error", e);
+      console.error("Auto Price Converter: Selector error", e);
       return;
     }
 
