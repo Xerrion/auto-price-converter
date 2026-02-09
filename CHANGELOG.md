@@ -1,5 +1,13 @@
 # auto-price-converter
 
+## 2.2.0
+
+### Minor Changes
+
+- [#20](https://github.com/Xerrion/auto-price-converter/pull/20) [`0158349`](https://github.com/Xerrion/auto-price-converter/commit/0158349a25b8f2e07402d6e440d4a05f7eced367) Thanks [@Xerrion](https://github.com/Xerrion)! - Add support for 7 new currency symbols: NGN (₦), VND (₫), KZT (₸), BDT (৳), RUB (₽), GHS (GH₵), GEL (₾)
+
+  New currencies can now be detected on e-commerce sites like Jumia (Nigeria, Ghana), Lazada (Vietnam), Kaspi (Kazakhstan), Daraz (Bangladesh), Yandex Market (Russia), and Wolt (Georgia).
+
 ## 2.1.0
 
 ### Minor Changes
