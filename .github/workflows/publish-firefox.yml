@@ -1,4 +1,4 @@
-name: Publish to Chrome Web Store
+name: Publish to Firefox Add-ons
 
 on:
   workflow_dispatch:
@@ -33,20 +33,18 @@ jobs:
       - name: Download release asset
         run: |
           gh release download "${{ steps.release.outputs.release }}" \
-            --pattern "extension-chrome-${{ steps.version.outputs.VERSION }}.zip" \
+            --pattern "extension-firefox-${{ steps.version.outputs.VERSION }}.zip" \
             --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload and publish to Chrome Web Store
-        uses: mobilefirstllc/cws-publish@latest
+      - name: Upload and publish to Firefox Add-ons
+        uses: wdzeng/firefox-addon@v1
         with:
-          action: publish
-          client_id: ${{ secrets.CHROME_CLIENT_ID }}
-          client_secret: ${{ secrets.CHROME_CLIENT_SECRET }}
-          refresh_token: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          extension_id: ${{ secrets.CHROME_EXTENSION_ID }}
-          zip_file: extension-chrome-${{ steps.version.outputs.VERSION }}.zip
+          addon-guid: auto-price-converter@xerrion.dev
+          xpi-path: extension-firefox-${{ steps.version.outputs.VERSION }}.zip
+          jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
 
       - name: Confirmation
-        run: echo "Chrome extension v${{ steps.version.outputs.VERSION }} submitted for Chrome Web Store review!"
+        run: echo "Firefox extension v${{ steps.version.outputs.VERSION }} submitted for Firefox Add-ons review!"

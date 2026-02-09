@@ -73,78 +73,58 @@ export function normalizeSettings(settings?: Partial<Settings> | null): Settings
 
 export async function getSettings(): Promise<Settings> {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(["settings"], (result) => {
+    browser.storage.sync.get(["settings"]).then((result) => {
       resolve(normalizeSettings(result.settings as Partial<Settings> | null));
     });
   });
 }
 
 export async function saveSettings(settings: Settings): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.set({ settings }, resolve);
-  });
+  return browser.storage.sync.set({ settings });
 }
 
 export async function getCachedRates(): Promise<CachedRates | undefined> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(["cachedRates"], (result) => {
-      const cached = result.cachedRates as CachedRates | undefined;
+  const result = await browser.storage.local.get(["cachedRates"]);
+  const cached = result.cachedRates as CachedRates | undefined;
 
-      // Check if cache is still valid
-      if (
-        cached &&
-        Date.now() - cached.fetchedAt < CACHE_DURATION_MS &&
-        cached.rates?.fetchedAt
-      ) {
-        resolve(cached);
-      } else {
-        resolve(undefined);
-      }
-    });
-  });
+  if (
+    cached &&
+    Date.now() - cached.fetchedAt < CACHE_DURATION_MS &&
+    cached.rates?.fetchedAt
+  ) {
+    return cached;
+  }
+  return undefined;
 }
 
 export async function setCachedRates(rates: CachedRates): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ cachedRates: rates }, resolve);
-  });
+  return browser.storage.local.set({ cachedRates: rates });
 }
 
 export async function getCachedSymbols(): Promise<CachedSymbols | undefined> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(["cachedSymbols"], (result) => {
-      const cached = result.cachedSymbols as CachedSymbols | undefined;
+  const result = await browser.storage.local.get(["cachedSymbols"]);
+  const cached = result.cachedSymbols as CachedSymbols | undefined;
 
-      if (
-        cached &&
-        Date.now() - cached.fetchedAt < CACHE_DURATION_MS &&
-        cached.symbols &&
-        Object.keys(cached.symbols).length > 0
-      ) {
-        resolve(cached);
-      } else {
-        resolve(undefined);
-      }
-    });
-  });
+  if (
+    cached &&
+    Date.now() - cached.fetchedAt < CACHE_DURATION_MS &&
+    cached.symbols &&
+    Object.keys(cached.symbols).length > 0
+  ) {
+    return cached;
+  }
+  return undefined;
 }
 
 export async function setCachedSymbols(symbols: CachedSymbols): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.storage.local.set({ cachedSymbols: symbols }, resolve);
-  });
+  return browser.storage.local.set({ cachedSymbols: symbols });
 }
 
 export async function getStorageItem<T>(key: string): Promise<T | undefined> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get([key], (result) => {
-      resolve(result[key] as T | undefined);
-    });
-  });
+  const result = await browser.storage.sync.get([key]);
+  return result[key] as T | undefined;
 }
 
 export async function setStorageItem<T>(key: string, value: T): Promise<void> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.set({ [key]: value }, resolve);
-  });
+  return browser.storage.sync.set({ [key]: value });
 }

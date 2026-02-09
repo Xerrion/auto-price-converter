@@ -42,7 +42,7 @@
 
     <div class="space-y-2">
       <Label for="target-currency" class="text-base font-medium">
-        Target Currency
+        Target Currency ({getCurrencyList(symbols).length} available)
       </Label>
       <p class="text-sm text-muted-foreground">
         All detected prices will be converted to this currency

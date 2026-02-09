@@ -4,10 +4,10 @@ This file provides essential information for AI coding agents working in this re
 
 ## Project Overview
 
-**Auto Price Converter** is a Chrome extension built with:
+**Auto Price Converter** is a browser extension (Chrome & Firefox) built with:
 
 - **Svelte 5** + TypeScript for UI components
-- **Vite** + `@crxjs/vite-plugin` for bundling
+- **WXT** (Web Extension Tools) for cross-browser bundling
 - **Bun** as the package manager
 - **Vitest** for testing
 - **Tailwind CSS v4** for styling
@@ -30,7 +30,9 @@ bun remove <package>     # Remove a dependency
 
 ```bash
 bun run dev              # Start dev server with HMR on port 5173
-bun run build            # Production build to ./dist
+bun run dev:firefox      # Start Firefox dev server
+bun run build            # Production build to dist/chrome-mv3
+bun run build:firefox    # Production build to dist/firefox-mv3
 bun run preview          # Preview production build
 ```
 
@@ -73,7 +75,7 @@ This project uses **Release Please** for automated version management and change
    - `feat!: breaking change` or `BREAKING CHANGE:` → Major version bump
 
 2. **Merge to main** → Release Please automatically creates/updates a Release PR with:
-   - Version bump in `package.json` and `manifest.config.ts`
+   - Version bump in `package.json`
    - Updated `CHANGELOG.md`
 
 3. **Merge the Release PR** → Automatically:
@@ -113,20 +115,23 @@ This project uses **Release Please** for automated version management and change
 ## Project Structure
 
 ```text
-src/
-├── background/          # Background service worker
-├── content/             # Content scripts (price detection & conversion)
-│   ├── parsers/         # Price parsing and formatting
-│   ├── scanners/        # DOM scanning for prices
-│   └── utils/           # Content script utilities
-├── lib/                 # Shared utilities and types
-│   ├── components/ui/   # Svelte UI components (shadcn-svelte)
-│   ├── types.ts         # Type definitions
-│   ├── storage.ts       # Chrome storage API wrappers
-│   └── exchangeRates.ts # Exchange rate fetching
-├── popup/               # Extension popup UI
-├── options/             # Extension options page
-└── icons/               # Extension icons
+├── public/icons/        # Extension icons (copied to output)
+├── src/
+│   ├── entrypoints/     # WXT entry points
+│   │   ├── background.ts    # Background service worker
+│   │   ├── content.ts       # Content script (price detection & conversion)
+│   │   ├── popup/           # Extension popup UI
+│   │   └── options/         # Extension options page
+│   ├── content/             # Content script modules
+│   │   ├── parsers/         # Price parsing and formatting
+│   │   ├── scanners/        # DOM scanning for prices
+│   │   └── utils/           # Content script utilities
+│   ├── lib/                 # Shared utilities and types
+│   │   ├── components/ui/   # Svelte UI components (shadcn-svelte)
+│   │   ├── types.ts         # Type definitions
+│   │   ├── storage.ts       # Browser storage API wrappers
+│   │   └── exchangeRates.ts # Exchange rate fetching
+│   └── assets/              # Source icons and logos
 ```
 
 ## Documentation Access
@@ -145,11 +150,14 @@ Before implementing features or using unfamiliar APIs:
 // ❌ Don't guess Svelte 5 runes syntax
 // ✅ Ask Context7: "How to use $effect in Svelte 5?"
 
-// ❌ Don't assume Chrome API behavior
-// ✅ Ask Context7: "How to use chrome.storage.sync API?"
+// ❌ Don't assume browser extension API behavior
+// ✅ Ask Context7: "How to use browser.storage.sync API?"
 
 // ❌ Don't guess Vitest testing patterns
 // ✅ Ask Context7: "How to mock modules in Vitest?"
+
+// ❌ Don't guess WXT patterns
+// ✅ Ask Context7: "How to define a content script in WXT?"
 ```
 
 **This prevents:**
@@ -220,10 +228,10 @@ import { formatPrice } from "./parsers/formatter";
 #### Async Functions
 
 ```typescript
-// Wrap Chrome API calls in try-catch
+// Wrap browser API calls in try-catch
 async function init(): Promise<void> {
   try {
-    const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" });
+    const settings = await browser.runtime.sendMessage({ type: "GET_SETTINGS" });
     // Handle success
   } catch (error) {
     console.error("Failed to initialize", error);
@@ -231,16 +239,13 @@ async function init(): Promise<void> {
 }
 ```
 
-#### Chrome Storage
+#### Browser Storage
 
 ```typescript
-// Use Promise wrappers for chrome.storage API
+// Use the browser.* API (works in both Chrome and Firefox via WXT)
 export async function getSettings(): Promise<Settings> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(["settings"], (result) => {
-      resolve(normalizeSettings(result.settings));
-    });
-  });
+  const result = await browser.storage.sync.get(["settings"]);
+  return normalizeSettings(result.settings);
 }
 ```
 
@@ -312,8 +317,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 ## Deployment Notes
 
 - **Chrome Web Store**: Published at [Chrome Web Store](https://chromewebstore.google.com/detail/auto-price-converter/njogpdjiklbgihogkdonlnhlonfhapjg)
+- **Firefox Add-ons**: Published at [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/auto-price-converter/)
 - **Web Store Listing**: See `docs/WEBSTORE.md` for listing content
-- **Build Artifact**: `extension-{version}.zip` attached to GitHub releases
+- **Build Artifact**: `extension-chrome-{version}.zip` and `extension-firefox-{version}.zip` attached to GitHub releases
 
 ## Common Issues
 

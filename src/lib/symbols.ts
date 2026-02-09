@@ -39,3 +39,15 @@ export async function getSymbols(): Promise<Record<string, string>> {
   }
   return response.symbols;
 }
+
+export async function refreshSymbols(): Promise<Record<string, string>> {
+  const response = await fetchSymbols();
+  if (Object.keys(response.symbols).length > 0) {
+    const cachedSymbols = {
+      symbols: response.symbols,
+      fetchedAt: Date.now(),
+    };
+    await setCachedSymbols(cachedSymbols);
+  }
+  return response.symbols;
+}
