@@ -44,32 +44,36 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build Chrome extension
-        run: bun run build
+      - name: Create ZIP archives (WXT)
+        run: bun run zip:all
         env:
           VITE_RATES_API_BASE: ${{ secrets.VITE_RATES_API_BASE }}
 
-      - name: Build Firefox extension
-        run: bun run build:firefox
-        env:
-          VITE_RATES_API_BASE: ${{ secrets.VITE_RATES_API_BASE }}
-
-      - name: Create Chrome ZIP archive
+      - name: Normalize ZIP filenames
         run: |
-          cd .output/chrome-mv3
-          zip -r ../../extension-chrome-${{ needs.release-please.outputs.version }}.zip .
+          VERSION="${{ needs.release-please.outputs.version }}"
+          CHROME_ZIP="dist/auto-price-converter-${VERSION}-chrome.zip"
+          FIREFOX_ZIP="dist/auto-price-converter-${VERSION}-firefox.zip"
 
-      - name: Create Firefox ZIP archive
-        run: |
-          cd .output/firefox-mv3
-          zip -r ../../extension-firefox-${{ needs.release-please.outputs.version }}.zip .
+          if [ ! -f "$CHROME_ZIP" ]; then
+            echo "Chrome ZIP not found at $CHROME_ZIP."
+            exit 1
+          fi
+
+          if [ ! -f "$FIREFOX_ZIP" ]; then
+            echo "Firefox ZIP not found at $FIREFOX_ZIP."
+            exit 1
+          fi
+
+          mv "$CHROME_ZIP" "auto-price-converter-${VERSION}-chrome.zip"
+          mv "$FIREFOX_ZIP" "auto-price-converter-${VERSION}-firefox.zip"
 
       - name: Upload release artifacts
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: |
-            extension-chrome-${{ needs.release-please.outputs.version }}.zip
-            extension-firefox-${{ needs.release-please.outputs.version }}.zip
+            auto-price-converter-${{ needs.release-please.outputs.version }}-chrome.zip
+            auto-price-converter-${{ needs.release-please.outputs.version }}-firefox.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

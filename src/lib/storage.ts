@@ -1,6 +1,11 @@
 // Chrome storage utilities
 
-import type { Settings, CachedRates, CachedSymbols, ExclusionEntry } from "./types";
+import type {
+  Settings,
+  CachedRates,
+  CachedSymbols,
+  ExclusionEntry,
+} from "./types";
 import { NUMBER_FORMATS, THEMES } from "./types";
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,7 +22,35 @@ export const DEFAULT_SETTINGS: Settings = {
 // Cache duration: 24 hours (backend sync interval)
 const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
-export function normalizeSettings(settings?: Partial<Settings> | null): Settings {
+async function getSyncOrLocalItem<T>(key: string): Promise<T | undefined> {
+  try {
+    const result = await browser.storage.sync.get([key]);
+    return result[key] as T | undefined;
+  } catch (error) {
+    console.warn(
+      "storage.sync unavailable, falling back to storage.local",
+      error,
+    );
+    const result = await browser.storage.local.get([key]);
+    return result[key] as T | undefined;
+  }
+}
+
+async function setSyncOrLocalItem<T>(key: string, value: T): Promise<void> {
+  try {
+    await browser.storage.sync.set({ [key]: value });
+  } catch (error) {
+    console.warn(
+      "storage.sync unavailable, falling back to storage.local",
+      error,
+    );
+    await browser.storage.local.set({ [key]: value });
+  }
+}
+
+export function normalizeSettings(
+  settings?: Partial<Settings> | null,
+): Settings {
   const merged: Settings = {
     ...DEFAULT_SETTINGS,
     ...(settings ?? {}),
@@ -72,15 +105,14 @@ export function normalizeSettings(settings?: Partial<Settings> | null): Settings
 }
 
 export async function getSettings(): Promise<Settings> {
-  return new Promise((resolve) => {
-    browser.storage.sync.get(["settings"]).then((result) => {
-      resolve(normalizeSettings(result.settings as Partial<Settings> | null));
-    });
-  });
+  const settings = await getSyncOrLocalItem<Partial<Settings> | null>(
+    "settings",
+  );
+  return normalizeSettings(settings ?? null);
 }
 
 export async function saveSettings(settings: Settings): Promise<void> {
-  return browser.storage.sync.set({ settings });
+  return setSyncOrLocalItem("settings", settings);
 }
 
 export async function getCachedRates(): Promise<CachedRates | undefined> {
@@ -121,10 +153,9 @@ export async function setCachedSymbols(symbols: CachedSymbols): Promise<void> {
 }
 
 export async function getStorageItem<T>(key: string): Promise<T | undefined> {
-  const result = await browser.storage.sync.get([key]);
-  return result[key] as T | undefined;
+  return getSyncOrLocalItem<T>(key);
 }
 
 export async function setStorageItem<T>(key: string, value: T): Promise<void> {
-  return browser.storage.sync.set({ [key]: value });
+  return setSyncOrLocalItem(key, value);
 }
