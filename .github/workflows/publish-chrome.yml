@@ -2,16 +2,10 @@ name: Publish to Chrome Web Store
 
 on:
   workflow_dispatch:
-    inputs:
-      confirm:
-        description: 'Type "publish" to confirm'
-        required: true
-        default: ""
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.event.inputs.confirm == 'publish'
 
     steps:
       - name: Get latest release
@@ -33,7 +27,7 @@ jobs:
       - name: Download release asset
         run: |
           gh release download "${{ steps.release.outputs.release }}" \
-            --pattern "extension-chrome-${{ steps.version.outputs.VERSION }}.zip" \
+            --pattern "auto-price-converter-${{ steps.version.outputs.VERSION }}-chrome.zip" \
             --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,7 +40,7 @@ jobs:
           client_secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh_token: ${{ secrets.CHROME_REFRESH_TOKEN }}
           extension_id: ${{ secrets.CHROME_EXTENSION_ID }}
-          zip_file: extension-chrome-${{ steps.version.outputs.VERSION }}.zip
+          zip_file: auto-price-converter-${{ steps.version.outputs.VERSION }}-chrome.zip
 
       - name: Confirmation
         run: echo "Chrome extension v${{ steps.version.outputs.VERSION }} submitted for Chrome Web Store review!"
