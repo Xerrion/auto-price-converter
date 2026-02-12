@@ -1,5 +1,12 @@
 # auto-price-converter
 
+## [3.0.2](https://github.com/Xerrion/auto-price-converter/compare/auto-price-converter-v3.0.1...auto-price-converter-v3.0.2) (2026-02-12)
+
+
+### Bug Fixes
+
+* simplify publish workflows ([#40](https://github.com/Xerrion/auto-price-converter/issues/40)) ([362af48](https://github.com/Xerrion/auto-price-converter/commit/362af482a771b85274976da325a4e63b4754be24))
+
 ## [3.0.1](https://github.com/Xerrion/auto-price-converter/compare/auto-price-converter-v3.0.0...auto-price-converter-v3.0.1) (2026-02-12)
 
 
