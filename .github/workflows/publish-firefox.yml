@@ -2,16 +2,10 @@ name: Publish to Firefox Add-ons
 
 on:
   workflow_dispatch:
-    inputs:
-      confirm:
-        description: 'Type "publish" to confirm'
-        required: true
-        default: ""
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.event.inputs.confirm == 'publish'
 
     steps:
       - name: Get latest release
@@ -24,7 +18,6 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          # Tag format: auto-price-converter-v2.3.0 -> extract 2.3.0
           VERSION=$(echo "$RELEASE_TAG" | sed 's/.*-v//')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         env:
@@ -33,7 +26,7 @@ jobs:
       - name: Download release asset
         run: |
           gh release download "${{ steps.release.outputs.release }}" \
-            --pattern "extension-firefox-${{ steps.version.outputs.VERSION }}.zip" \
+            --pattern "auto-price-converter-${{ steps.version.outputs.VERSION }}-firefox.zip" \
             --repo "${{ github.repository }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,7 +35,7 @@ jobs:
         uses: wdzeng/firefox-addon@v1
         with:
           addon-guid: auto-price-converter@xerrion.dev
-          xpi-path: extension-firefox-${{ steps.version.outputs.VERSION }}.zip
+          xpi-path: auto-price-converter-${{ steps.version.outputs.VERSION }}-firefox.zip
           jwt-issuer: ${{ secrets.FIREFOX_JWT_ISSUER }}
           jwt-secret: ${{ secrets.FIREFOX_JWT_SECRET }}
 
