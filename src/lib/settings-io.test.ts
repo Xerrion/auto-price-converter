@@ -303,7 +303,10 @@ describe("parseSettingsFile", () => {
         | null = null;
       result: string | ArrayBuffer | null = null;
       readAsText(): void {
-        this.onerror?.(new ProgressEvent("error"));
+        this.onerror?.call(
+          this as unknown as FileReader,
+          new ProgressEvent("error") as ProgressEvent<FileReader>,
+        );
       }
     }
 
