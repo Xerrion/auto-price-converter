@@ -36,8 +36,53 @@ jobs:
       - name: Type check
         run: bun run check
 
-      - name: Run tests
-        run: bun run test:run
+      - name: Run tests with coverage
+        run: bun run vitest run --coverage --coverage.reporter=lcov --coverage.reporter=text-summary --coverage.reporter=json-summary --coverage.reporter=html
+
+      - name: Add coverage summary to GitHub job summary
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'coverage/coverage-summary.json';
+
+          if (!fs.existsSync(path)) {
+            console.log('coverage-summary.json not found, skipping summary');
+            process.exit(0);
+          }
+
+          const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const total = summary.total;
+
+          const markdown = [
+            '## Test Coverage',
+            '',
+            '| Metric | Covered | Total | % |',
+            '|---|---:|---:|---:|',
+            `| Lines | ${total.lines.covered} | ${total.lines.total} | ${total.lines.pct}% |`,
+            `| Statements | ${total.statements.covered} | ${total.statements.total} | ${total.statements.pct}% |`,
+            `| Functions | ${total.functions.covered} | ${total.functions.total} | ${total.functions.pct}% |`,
+            `| Branches | ${total.branches.covered} | ${total.branches.total} | ${total.branches.pct}% |`,
+            '',
+            '_Detailed HTML report is available in the workflow artifacts (`coverage-html`)._',
+          ].join('\n');
+
+          const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+          fs.appendFileSync(summaryFile, `${markdown}\n`);
+          NODE
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage/
+          if-no-files-found: error
 
       - name: Report status for pull_request_target
         if: github.event_name == 'pull_request_target'

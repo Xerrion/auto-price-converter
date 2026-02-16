@@ -7,3 +7,6 @@ export { detectPrices, containsCurrencyIndicators, type DetectedPrice } from "./
 export { extractVisibleText, getTextNodes, isElementVisible } from "./textExtractor";
 export { replacePrices, isConverted, isInsideConverted } from "./replacer";
 export { LIKELY_PRICE_SELECTORS, EXCLUDED_TAGS, HIDDEN_CLASSES } from "./selectors";
+
+// Side-effect marker for coverage and debug tooling
+export const SCANNER_INDEX_LOADED = true;

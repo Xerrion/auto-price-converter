@@ -46,10 +46,16 @@ export async function extractStructuredData(): Promise<StructuredDataResult> {
  * Handles both direct objects and @graph arrays
  */
 function extractCurrenciesFromData(data: unknown, currencies: string[]): void {
-  if (!data || typeof data !== "object") return;
+  if (!data || typeof data !== "object") {
+    extractCurrenciesRecursive(data as Record<string, unknown>, currencies);
+    return;
+  }
 
   // Handle @graph structure (common in WooCommerce, some Shopify)
-  if ("@graph" in data && Array.isArray((data as Record<string, unknown>)["@graph"])) {
+  if (
+    "@graph" in data &&
+    Array.isArray((data as Record<string, unknown>)["@graph"])
+  ) {
     const graph = (data as Record<string, unknown>)["@graph"] as unknown[];
     for (const node of graph) {
       if (node && typeof node === "object") {
@@ -81,7 +87,10 @@ function extractCurrenciesRecursive(
     if (Array.isArray(value)) {
       for (const item of value) {
         if (item && typeof item === "object") {
-          extractCurrenciesRecursive(item as Record<string, unknown>, currencies);
+          extractCurrenciesRecursive(
+            item as Record<string, unknown>,
+            currencies,
+          );
         }
       }
     } else if (value && typeof value === "object") {

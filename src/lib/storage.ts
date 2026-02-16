@@ -1,5 +1,6 @@
-// Chrome storage utilities
+// Storage utilities (WXT storage wrapper)
 
+import { storage } from "#imports";
 import type {
   Settings,
   CachedRates,
@@ -24,28 +25,39 @@ const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
 async function getSyncOrLocalItem<T>(key: string): Promise<T | undefined> {
   try {
-    const result = await browser.storage.sync.get([key]);
-    return result[key] as T | undefined;
+    const result = await storage.getItem<T>(`sync:${key}`);
+    if (result != null) {
+      return result;
+    }
   } catch (error) {
     console.warn(
       "storage.sync unavailable, falling back to storage.local",
       error,
     );
-    const result = await browser.storage.local.get([key]);
-    return result[key] as T | undefined;
   }
+
+  try {
+    const result = await storage.getItem<T>(`local:${key}`);
+    return result ?? undefined;
+  } catch (error) {
+    console.warn("storage.local unavailable", error);
+  }
+
+  return undefined;
 }
 
 async function setSyncOrLocalItem<T>(key: string, value: T): Promise<void> {
   try {
-    await browser.storage.sync.set({ [key]: value });
+    await storage.setItem(`sync:${key}`, value);
+    return;
   } catch (error) {
     console.warn(
       "storage.sync unavailable, falling back to storage.local",
       error,
     );
-    await browser.storage.local.set({ [key]: value });
   }
+
+  await storage.setItem(`local:${key}`, value);
 }
 
 export function normalizeSettings(
@@ -116,8 +128,7 @@ export async function saveSettings(settings: Settings): Promise<void> {
 }
 
 export async function getCachedRates(): Promise<CachedRates | undefined> {
-  const result = await browser.storage.local.get(["cachedRates"]);
-  const cached = result.cachedRates as CachedRates | undefined;
+  const cached = await storage.getItem<CachedRates>("local:cachedRates");
 
   if (
     cached &&
@@ -130,12 +141,11 @@ export async function getCachedRates(): Promise<CachedRates | undefined> {
 }
 
 export async function setCachedRates(rates: CachedRates): Promise<void> {
-  return browser.storage.local.set({ cachedRates: rates });
+  return storage.setItem("local:cachedRates", rates);
 }
 
 export async function getCachedSymbols(): Promise<CachedSymbols | undefined> {
-  const result = await browser.storage.local.get(["cachedSymbols"]);
-  const cached = result.cachedSymbols as CachedSymbols | undefined;
+  const cached = await storage.getItem<CachedSymbols>("local:cachedSymbols");
 
   if (
     cached &&
@@ -149,7 +159,7 @@ export async function getCachedSymbols(): Promise<CachedSymbols | undefined> {
 }
 
 export async function setCachedSymbols(symbols: CachedSymbols): Promise<void> {
-  return browser.storage.local.set({ cachedSymbols: symbols });
+  return storage.setItem("local:cachedSymbols", symbols);
 }
 
 export async function getStorageItem<T>(key: string): Promise<T | undefined> {

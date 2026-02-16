@@ -25,7 +25,9 @@ describe("extractDomain", () => {
   });
 
   it("extracts domain from URL with subdomain", () => {
-    expect(extractDomain("https://sub.example.com/page")).toBe("sub.example.com");
+    expect(extractDomain("https://sub.example.com/page")).toBe(
+      "sub.example.com",
+    );
   });
 
   it("extracts domain from URL with www", () => {
@@ -42,6 +44,10 @@ describe("extractDomain", () => {
 
   it("handles invalid URL gracefully", () => {
     expect(extractDomain("not-a-url")).toBe("not-a-url");
+  });
+
+  it("returns empty string when no domain can be extracted", () => {
+    expect(extractDomain("")).toBe("");
   });
 });
 
@@ -62,6 +68,10 @@ describe("extractUrlWithoutHash", () => {
     expect(
       extractUrlWithoutHash("https://example.com/page?q=test#section"),
     ).toBe("https://example.com/page?q=test");
+  });
+
+  it("returns original value for invalid URL", () => {
+    expect(extractUrlWithoutHash("not-a-url")).toBe("not-a-url");
   });
 });
 
@@ -86,6 +96,10 @@ describe("normalizeUrl", () => {
     expect(normalizeUrl("https://example.com/page#section")).toBe(
       "https://example.com/page",
     );
+  });
+
+  it("falls back to lowercased trimmed string for invalid URL", () => {
+    expect(normalizeUrl("  NOT-A-URL  ")).toBe("not-a-url");
   });
 });
 
@@ -231,9 +245,9 @@ describe("exclusionExists", () => {
   ];
 
   it("detects existing URL exclusion", () => {
-    expect(exclusionExists("https://example.com/page", "url", existingList)).toBe(
-      true,
-    );
+    expect(
+      exclusionExists("https://example.com/page", "url", existingList),
+    ).toBe(true);
   });
 
   it("does not match different URL", () => {

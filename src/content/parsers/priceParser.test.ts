@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { parsePrice, normalizeAmount, resolveCurrency } from "./priceParser";
 
 describe("normalizeAmount", () => {
@@ -90,10 +90,20 @@ describe("parsePrice", () => {
     expect(result).toEqual({ amount: 1234.56, currency: "USD" });
   });
 
+  it("parses European number formats with locale", () => {
+    const result = parsePrice("1.234,56 €", { locale: "de-DE" });
+    expect(result).toEqual({ amount: 1234.56, currency: "EUR" });
+  });
+
   it("returns null for invalid prices", () => {
     expect(parsePrice("hello")).toBeNull();
     expect(parsePrice("$0")).toBeNull();
     expect(parsePrice("$-10")).toBeNull();
+  });
+
+  it("uses context to disambiguate currency", () => {
+    const result = parsePrice("$50", { context: { currency: "CAD" } });
+    expect(result).toEqual({ amount: 50, currency: "CAD" });
   });
 
   it("does not match model numbers followed by currency symbol", () => {
@@ -144,5 +154,18 @@ describe("parsePrice", () => {
       const result = parsePrice("GH₵ 47.00");
       expect(result).toEqual({ amount: 47, currency: "GHS" });
     });
+  });
+
+  it("returns null when currency resolver fails", async () => {
+    vi.resetModules();
+    vi.doMock("./currencyResolver", () => ({
+      resolveCurrency: vi.fn(() => null),
+    }));
+
+    const { parsePrice: parsePriceWithMock } = await import("./priceParser");
+    expect(parsePriceWithMock("$10")).toBeNull();
+
+    vi.resetModules();
+    vi.unmock("./currencyResolver");
   });
 });

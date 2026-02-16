@@ -1,6 +1,21 @@
-import { describe, it, expect } from "vitest";
-import { convertCurrency } from "./exchangeRates";
+import type { Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("./storage", () => ({
+  getCachedRates: vi.fn(),
+  setCachedRates: vi.fn(),
+}));
+
+import {
+  convertCurrency,
+  fetchLatestRates,
+  getExchangeRates,
+} from "./exchangeRates";
 import type { ExchangeRates } from "./types";
+import { getCachedRates, setCachedRates } from "./storage";
+
+const mockGetCachedRates = vi.mocked(getCachedRates);
+const mockSetCachedRates = vi.mocked(setCachedRates);
 
 const mockRates: ExchangeRates = {
   base: "EUR",
@@ -57,5 +72,121 @@ describe("convertCurrency", () => {
     expect(() =>
       convertCurrency(100, "EUR", "XYZ" as any, mockRates),
     ).toThrow();
+  });
+});
+
+describe("fetchLatestRates", () => {
+  beforeEach(() => {
+    globalThis.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns normalized exchange rates", async () => {
+    (globalThis.fetch as Mock).mockResolvedValue({
+      ok: true,
+      statusText: "OK",
+      json: async () => ({
+        base: "EUR",
+        date: "2024-02-01",
+        fetched_at: "2024-02-01T00:00:00Z",
+        rates: { USD: 1.2 },
+      }),
+    } as Response);
+
+    await expect(fetchLatestRates()).resolves.toEqual({
+      base: "EUR",
+      date: "2024-02-01",
+      fetchedAt: "2024-02-01T00:00:00Z",
+      rates: { EUR: 1, USD: 1.2 },
+    });
+  });
+
+  it("throws when response is not ok", async () => {
+    (globalThis.fetch as Mock).mockResolvedValue({
+      ok: false,
+      statusText: "Server Error",
+      json: async () => ({}),
+    } as Response);
+
+    await expect(fetchLatestRates()).rejects.toThrow(
+      "Failed to fetch exchange rates: Server Error",
+    );
+  });
+
+  it("throws when backend returns non-EUR base", async () => {
+    (globalThis.fetch as Mock).mockResolvedValue({
+      ok: true,
+      statusText: "OK",
+      json: async () => ({
+        base: "USD",
+        date: "2024-02-01",
+        rates: { EUR: 0.9 },
+      }),
+    } as Response);
+
+    await expect(fetchLatestRates()).rejects.toThrow(
+      "Unexpected base currency from backend: USD",
+    );
+  });
+
+  it("uses configured API base", async () => {
+    const base =
+      import.meta.env.VITE_RATES_API_BASE ?? "https://apc-api.up.railway.app";
+
+    (globalThis.fetch as Mock).mockResolvedValue({
+      ok: true,
+      statusText: "OK",
+      json: async () => ({
+        base: "EUR",
+        date: "2024-02-01",
+        rates: { USD: 1.2 },
+      }),
+    } as Response);
+
+    await fetchLatestRates();
+    expect(globalThis.fetch).toHaveBeenCalledWith(`${base}/rates/latest`);
+  });
+});
+
+describe("getExchangeRates", () => {
+  beforeEach(() => {
+    mockGetCachedRates.mockReset();
+    mockSetCachedRates.mockReset();
+    globalThis.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns cached rates when available", async () => {
+    mockGetCachedRates.mockResolvedValue({
+      fetchedAt: Date.now(),
+      rates: mockRates,
+    });
+
+    await expect(getExchangeRates()).resolves.toEqual(mockRates);
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("fetches and caches rates when cache is missing", async () => {
+    mockGetCachedRates.mockResolvedValue(undefined);
+    (globalThis.fetch as Mock).mockResolvedValue({
+      ok: true,
+      statusText: "OK",
+      json: async () => ({
+        base: "EUR",
+        date: "2024-02-01",
+        rates: { USD: 1.2 },
+      }),
+    } as Response);
+
+    const rates = await getExchangeRates();
+    expect(rates.base).toBe("EUR");
+    expect(rates.rates.USD).toBe(1.2);
+    expect(mockSetCachedRates).toHaveBeenCalledTimes(1);
   });
 });

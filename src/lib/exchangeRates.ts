@@ -9,16 +9,18 @@ import type {
 } from "./types";
 import { getCachedRates, setCachedRates } from "./storage";
 
-const API_BASE_URL =
-  import.meta.env.VITE_RATES_API_BASE ??
-  "https://apc-api.up.railway.app";
+const getApiBaseUrl = (): string => {
+  return (
+    import.meta.env.VITE_RATES_API_BASE ?? "https://apc-api.up.railway.app"
+  );
+};
 
 /**
  * Fetches the latest exchange rates from the backend API
  * Uses EUR as base currency and fetches ALL available currencies
  */
 export async function fetchLatestRates(): Promise<ExchangeRates> {
-  const url = `${API_BASE_URL}/rates/latest`;
+  const url = `${getApiBaseUrl()}/rates/latest`;
 
   const response = await fetch(url);
 

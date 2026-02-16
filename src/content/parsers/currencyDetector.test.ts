@@ -155,6 +155,24 @@ describe("detectCurrency", () => {
       expect(detectCurrency("50 €")?.position).toBe("after");
       expect(detectCurrency("100 USD")?.position).toBe("after");
     });
+
+    it("prefers number after when digits exist on both sides", () => {
+      const result = detectCurrency("50 $ 60");
+      expect(result?.symbol).toBe("$");
+      expect(result?.position).toBe("before");
+    });
+
+    it("uses after position when digits only before symbol", () => {
+      const result = detectCurrency("Price 100 $ now");
+      expect(result?.symbol).toBe("$");
+      expect(result?.position).toBe("after");
+    });
+
+    it("uses before position when digits only after symbol", () => {
+      const result = detectCurrency("USD price 100");
+      expect(result?.symbol.toUpperCase()).toBe("USD");
+      expect(result?.position).toBe("before");
+    });
   });
 
   describe("priority order", () => {
