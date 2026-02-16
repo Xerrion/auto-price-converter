@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { extractAmountString, parseLocalizedNumber } from "./amountExtractor";
 import type { CurrencyMatch } from "./currencyDetector";
 
@@ -83,7 +83,9 @@ describe("extractAmountString", () => {
         startIndex: 9,
         endIndex: 10,
       };
-      expect(extractAmountString("1\u00A0234,56 €", match)).toBe("1\u00A0234,56");
+      expect(extractAmountString("1\u00A0234,56 €", match)).toBe(
+        "1\u00A0234,56",
+      );
     });
 
     it("extracts amount with narrow NBSP separator", () => {
@@ -93,7 +95,9 @@ describe("extractAmountString", () => {
         startIndex: 9,
         endIndex: 10,
       };
-      expect(extractAmountString("1\u202F234,56 €", match)).toBe("1\u202F234,56");
+      expect(extractAmountString("1\u202F234,56 €", match)).toBe(
+        "1\u202F234,56",
+      );
     });
   });
 
@@ -111,6 +115,9 @@ describe("extractAmountString", () => {
 });
 
 describe("parseLocalizedNumber", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   describe("US format (1,234.56)", () => {
     it("parses simple integer", () => {
       expect(parseLocalizedNumber("100", "en-US")).toBe(100);
@@ -126,6 +133,17 @@ describe("parseLocalizedNumber", () => {
 
     it("parses large number", () => {
       expect(parseLocalizedNumber("1,234,567.89", "en-US")).toBe(1234567.89);
+    });
+
+    it("uses locale-specific separators when recognized", () => {
+      const partsSpy = vi.spyOn(Intl.NumberFormat.prototype, "formatToParts");
+
+      const resolvedLocale = new Intl.NumberFormat("en-US").resolvedOptions()
+        .locale;
+      parseLocalizedNumber("1,234.56", resolvedLocale);
+
+      expect(partsSpy).toHaveBeenCalled();
+      partsSpy.mockRestore();
     });
   });
 
@@ -168,6 +186,16 @@ describe("parseLocalizedNumber", () => {
   describe("fallback for invalid locale", () => {
     it("falls back to default parsing for invalid locale", () => {
       expect(parseLocalizedNumber("1,234.56", "invalid-locale")).toBe(1234.56);
+    });
+
+    it("falls back when Intl.NumberFormat throws", () => {
+      vi.spyOn(Intl, "NumberFormat").mockImplementation(
+        function NumberFormat() {
+          throw new Error("Intl error");
+        } as unknown as typeof Intl.NumberFormat,
+      );
+
+      expect(parseLocalizedNumber("1,234.56", "xx-YY")).toBe(1234.56);
     });
   });
 

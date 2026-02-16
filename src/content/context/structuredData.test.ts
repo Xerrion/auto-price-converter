@@ -159,6 +159,63 @@ describe("extractStructuredData", () => {
       expect(result.pageCurrency).toBeNull();
     });
 
+    it("ignores non-object JSON values", async () => {
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.textContent = "123";
+      document.head.appendChild(script);
+
+      const result = await extractStructuredData();
+      expect(result.pageCurrency).toBeNull();
+    });
+
+    it("ignores @graph when not an array", async () => {
+      addJsonLd({
+        "@context": "https://schema.org",
+        "@graph": "not-an-array",
+        priceCurrency: "USD",
+      });
+
+      const result = await extractStructuredData();
+      expect(result.pageCurrency).toBe("USD");
+    });
+
+    it("ignores non-object nodes in @graph", async () => {
+      addJsonLd({
+        "@context": "https://schema.org",
+        "@graph": ["USD", null, { priceCurrency: "EUR" }],
+      });
+
+      const result = await extractStructuredData();
+      expect(result.pageCurrency).toBe("EUR");
+    });
+
+    it("extracts currency from nested object fields", async () => {
+      addJsonLd({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        offers: {
+          priceSpecification: {
+            priceCurrency: "JPY",
+          },
+        },
+      });
+
+      const result = await extractStructuredData();
+      expect(result.pageCurrency).toBe("JPY");
+    });
+
+    it("extracts currency from array items when present", async () => {
+      addJsonLd({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        offers: ["not-an-object", { priceCurrency: "CAD" }],
+      });
+
+      const result = await extractStructuredData();
+      expect(result.pageCurrency).toBe("CAD");
+    });
+
     it("returns most common currency when multiple present", async () => {
       // Add multiple products with different currencies
       addJsonLd({

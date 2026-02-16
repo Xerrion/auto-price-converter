@@ -1,8 +1,9 @@
 // Tests for settings import/export utilities
 
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createExportData,
+  exportSettings,
   validateImportedSettings,
   parseSettingsFile,
   getExportVersion,
@@ -58,6 +59,35 @@ describe("createExportData", () => {
   });
 });
 
+describe("exportSettings", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("creates a download link and revokes the object URL", () => {
+    const link = document.createElement("a");
+    const clickSpy = vi.spyOn(link, "click").mockImplementation(() => {});
+
+    vi.spyOn(document, "createElement").mockReturnValue(link);
+    const appendSpy = vi.spyOn(document.body, "appendChild");
+    const removeSpy = vi.spyOn(document.body, "removeChild");
+    const createUrlSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:mock");
+    const revokeSpy = vi.spyOn(URL, "revokeObjectURL");
+
+    exportSettings(validSettings);
+
+    expect(createUrlSpy).toHaveBeenCalledTimes(1);
+    expect(link.download).toBe("price-converter-settings.json");
+    expect(link.href).toBe("blob:mock");
+    expect(appendSpy).toHaveBeenCalledWith(link);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(removeSpy).toHaveBeenCalledWith(link);
+    expect(revokeSpy).toHaveBeenCalledWith("blob:mock");
+  });
+});
+
 describe("getExportVersion", () => {
   it("returns current version", () => {
     expect(getExportVersion()).toBe(1);
@@ -97,9 +127,7 @@ describe("validateImportedSettings", () => {
 
   it("rejects null data", () => {
     expect(() => validateImportedSettings(null)).toThrow(SettingsImportError);
-    expect(() => validateImportedSettings(null)).toThrow(
-      "Invalid file format",
-    );
+    expect(() => validateImportedSettings(null)).toThrow("Invalid file format");
   });
 
   it("rejects non-object data", () => {
@@ -199,6 +227,10 @@ describe("validateImportedSettings", () => {
 });
 
 describe("parseSettingsFile", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   function createMockFile(
     content: string,
     name: string = "settings.json",
@@ -259,5 +291,29 @@ describe("parseSettingsFile", () => {
     );
 
     await expect(parseSettingsFile(file)).rejects.toThrow(SettingsImportError);
+  });
+
+  it("rejects when FileReader fails", async () => {
+    class MockFileReader {
+      onload:
+        | ((this: FileReader, ev: ProgressEvent<FileReader>) => void)
+        | null = null;
+      onerror:
+        | ((this: FileReader, ev: ProgressEvent<FileReader>) => void)
+        | null = null;
+      result: string | ArrayBuffer | null = null;
+      readAsText(): void {
+        this.onerror?.(new ProgressEvent("error"));
+      }
+    }
+
+    vi.stubGlobal("FileReader", MockFileReader as unknown as typeof FileReader);
+
+    const file = createMockFile("{}", "settings.json");
+
+    await expect(parseSettingsFile(file)).rejects.toThrow(SettingsImportError);
+    await expect(parseSettingsFile(file)).rejects.toThrow(
+      "Failed to read file",
+    );
   });
 });

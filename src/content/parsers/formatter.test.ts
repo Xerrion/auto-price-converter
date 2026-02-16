@@ -22,6 +22,10 @@ describe("formatPrice", () => {
     expect(formatPrice(25, "CAD", 2)).toBe("CA$25.00");
   });
 
+  it("formats unknown currency with code as symbol", () => {
+    expect(formatPrice(10, "XYZ", 2)).toBe("10.00 XYZ");
+  });
+
   it("respects decimal places", () => {
     expect(formatPrice(10.555, "USD", 0)).toBe("$11");
     expect(formatPrice(10.555, "USD", 1)).toBe("$10.6");

@@ -1,17 +1,75 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { buildPageContext, TLD_CURRENCY_MAP } from "./pageContext";
+
+vi.mock("./structuredData", async () => {
+  const actual = await vi.importActual<typeof import("./structuredData")>(
+    "./structuredData",
+  );
+  return {
+    ...actual,
+    extractStructuredData: vi.fn(actual.extractStructuredData),
+  };
+});
+
+vi.mock("./domCurrency", async () => {
+  const actual = await vi.importActual<typeof import("./domCurrency")>(
+    "./domCurrency",
+  );
+  return {
+    ...actual,
+    extractDomCurrency: vi.fn(actual.extractDomCurrency),
+  };
+});
+
+import { extractStructuredData } from "./structuredData";
+import { extractDomCurrency } from "./domCurrency";
+
+const mockExtractStructuredData = vi.mocked(extractStructuredData);
+const mockExtractDomCurrency = vi.mocked(extractDomCurrency);
 
 describe("buildPageContext", () => {
   // Store original values
   let originalLang: string;
+  let originalLocation: Location;
+  let originalNavigatorLanguage: string | undefined;
+  let actualStructuredData: typeof import("./structuredData") | undefined;
+  let actualDomCurrency: typeof import("./domCurrency") | undefined;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     originalLang = document.documentElement.lang;
+    originalLocation = window.location;
+    originalNavigatorLanguage = navigator.language;
+
+    if (!actualStructuredData) {
+      actualStructuredData = await vi.importActual<
+        typeof import("./structuredData")
+      >("./structuredData");
+    }
+    if (!actualDomCurrency) {
+      actualDomCurrency = await vi.importActual<typeof import("./domCurrency")>(
+        "./domCurrency",
+      );
+    }
+
+    mockExtractStructuredData.mockImplementation(
+      actualStructuredData.extractStructuredData,
+    );
+    mockExtractDomCurrency.mockImplementation(
+      actualDomCurrency.extractDomCurrency,
+    );
   });
 
   afterEach(() => {
     // Restore original values
     document.documentElement.lang = originalLang;
+    Object.defineProperty(window, "location", {
+      value: originalLocation,
+      configurable: true,
+    });
+    Object.defineProperty(navigator, "language", {
+      value: originalNavigatorLanguage,
+      configurable: true,
+    });
 
     // Clean up DOM
     document
@@ -20,9 +78,7 @@ describe("buildPageContext", () => {
     document
       .querySelectorAll('meta[property="product:price:currency"]')
       .forEach((el) => el.remove());
-    document
-      .querySelectorAll("[data-currency]")
-      .forEach((el) => el.remove());
+    document.querySelectorAll("[data-currency]").forEach((el) => el.remove());
   });
 
   // Helper to add JSON-LD script
@@ -63,6 +119,18 @@ describe("buildPageContext", () => {
       const context = await buildPageContext();
       expect(context.localeSource).toBe("navigator");
     });
+
+    it("uses default locale when navigator.language is empty", async () => {
+      document.documentElement.lang = "";
+      Object.defineProperty(navigator, "language", {
+        value: "",
+        configurable: true,
+      });
+
+      const context = await buildPageContext();
+      expect(context.locale).toBe("en-US");
+      expect(context.localeSource).toBe("navigator");
+    });
   });
 
   describe("currency detection priority", () => {
@@ -101,6 +169,59 @@ describe("buildPageContext", () => {
       expect(context.currency).toBeNull();
       expect(context.currencySource).toBe("none");
       expect(context.currencyConfidence).toBe("none");
+    });
+
+    it("uses TLD currency when JSON-LD invalid and DOM empty", async () => {
+      mockExtractStructuredData.mockResolvedValue({ pageCurrency: "US" });
+      mockExtractDomCurrency.mockReturnValue({
+        currency: null,
+        source: "none",
+      });
+      Object.defineProperty(window, "location", {
+        value: { hostname: "shop.co.uk" },
+        configurable: true,
+      });
+
+      const context = await buildPageContext();
+      expect(context.currency).toBe("GBP");
+      expect(context.currencySource).toBe("domain");
+      expect(context.currencyConfidence).toBe("medium");
+    });
+
+    it("returns none when TLD lookup throws", async () => {
+      mockExtractStructuredData.mockResolvedValue({ pageCurrency: "US" });
+      mockExtractDomCurrency.mockReturnValue({
+        currency: null,
+        source: "none",
+      });
+      Object.defineProperty(window, "location", {
+        value: {
+          get hostname() {
+            throw new Error("location error");
+          },
+        },
+        configurable: true,
+      });
+
+      const context = await buildPageContext();
+      expect(context.currency).toBeNull();
+      expect(context.currencySource).toBe("none");
+    });
+
+    it("returns none when JSON-LD currency is not a major currency", async () => {
+      mockExtractStructuredData.mockResolvedValue({ pageCurrency: "ABC" });
+      mockExtractDomCurrency.mockReturnValue({
+        currency: null,
+        source: "none",
+      });
+      Object.defineProperty(window, "location", {
+        value: { hostname: "example.zz" },
+        configurable: true,
+      });
+
+      const context = await buildPageContext();
+      expect(context.currency).toBeNull();
+      expect(context.currencySource).toBe("none");
     });
   });
 

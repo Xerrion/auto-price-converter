@@ -5,9 +5,7 @@ describe("extractDomCurrency", () => {
   // Clean up after each test
   afterEach(() => {
     // Remove added elements
-    document
-      .querySelectorAll("[data-testid]")
-      .forEach((el) => el.remove());
+    document.querySelectorAll("[data-testid]").forEach((el) => el.remove());
     document
       .querySelectorAll('meta[property="product:price:currency"]')
       .forEach((el) => el.remove());
@@ -17,9 +15,7 @@ describe("extractDomCurrency", () => {
     document
       .querySelectorAll('meta[itemprop="priceCurrency"]')
       .forEach((el) => el.remove());
-    document
-      .querySelectorAll("[data-currency]")
-      .forEach((el) => el.remove());
+    document.querySelectorAll("[data-currency]").forEach((el) => el.remove());
     document
       .querySelectorAll("[data-shop-currency]")
       .forEach((el) => el.remove());
@@ -157,6 +153,41 @@ describe("extractDomCurrency", () => {
       const result = extractDomCurrency();
       expect(result.currency).toBe("NOK");
       expect(result.source).toBe("selected-option");
+    });
+
+    it("extracts currency from selected option text when value is missing", () => {
+      const select = document.createElement("select");
+      select.setAttribute("name", "currency");
+      select.setAttribute("data-testid", "test");
+
+      const option = document.createElement("option");
+      option.setAttribute("selected", "");
+      option.textContent = " SEK ";
+      select.appendChild(option);
+
+      document.body.appendChild(select);
+
+      const result = extractDomCurrency();
+      expect(result.currency).toBe("SEK");
+      expect(result.source).toBe("selected-option");
+    });
+
+    it("ignores invalid selected option value even if text looks valid", () => {
+      const select = document.createElement("select");
+      select.setAttribute("name", "currency");
+      select.setAttribute("data-testid", "test");
+
+      const option = document.createElement("option");
+      option.setAttribute("value", "dollars");
+      option.setAttribute("selected", "");
+      option.textContent = "USD";
+      select.appendChild(option);
+
+      document.body.appendChild(select);
+
+      const result = extractDomCurrency();
+      expect(result.currency).toBeNull();
+      expect(result.source).toBe("none");
     });
   });
 
