@@ -110,11 +110,8 @@ function buildMatch(match: RegExpExecArray, text: string): CurrencyMatch {
       position = "before";
     } else if (hasDigitBefore && !hasDigitAfter) {
       position = "after";
-    } else if (hasDigitAfter) {
-      // Both have digits, prefer after (symbol before amount is more common)
-      position = "before";
     } else {
-      // Default
+      // Both sides have digits or neither side has digits; default to before
       position = "before";
     }
   }
